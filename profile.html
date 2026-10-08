@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profile — Pawgram</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<style>
+body{margin:0;background:#FBF3E9;font-family:'Figtree',sans-serif;color:#3A2E26}
+a{color:#D9784F;text-decoration:none}
+a.navitem,a.plain{color:#3A2E26;text-decoration:none}
+.navitem{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:14px;font-weight:600;font-size:15px;color:#3A2E26}
+.navitem.active{background:#F6E3D6;color:#D9784F}
+.btn{border:none;border-radius:999px;font-family:'Figtree',sans-serif;font-weight:600;cursor:pointer}
+.card{background:#fff;border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
+</style>
+
+</head>
+<body>
+
+<div style="display:flex;max-width:1320px;margin:0 auto;min-height:100vh">
+
+  <!-- LEFT SIDEBAR -->
+  <div style="width:230px;flex:0 0 230px;padding:28px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid #EAE0D2">
+    <div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:24px;padding:8px 16px 24px;color:#3A2E26">Pawgram</div>
+    <a href="feed.html" class="navitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg>Home</a>
+    <div class="navitem" style="opacity:.5;cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>Explore</div>
+    <div class="navitem" style="opacity:.5;cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0112 5.5 5.5 5.5 0 0121.5 12c-2.5 4.4-9.5 9-9.5 9z"/></svg>Playdates</div>
+    <div class="navitem" style="opacity:.5;cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Messages</div>
+    <a href="#" id="profile-link" class="navitem active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>Profile</a>
+    <a href="#" id="logout-link" class="plain" style="margin-top:auto;padding:12px 16px;font-size:13px;color:#A6927C">Log out</a>
+  </div>
+
+  <!-- MAIN -->
+  <div style="flex:1 1 auto;min-width:0;padding:28px 28px;display:flex;flex-direction:column;gap:20px">
+
+    <div id="profile-header" class="card" style="padding:32px;text-align:center;color:#A6927C">Loading profile…</div>
+
+    <div id="posts-section" style="display:flex;flex-direction:column;gap:20px"></div>
+
+  </div>
+
+</div>
+
+<script>
+let session, me, viewedProfile;
+
+function getUsernameFromQuery() {
+  return new URLSearchParams(window.location.search).get('u');
+}
+
+async function loadProfile() {
+  const header = document.getElementById('profile-header');
+  const username = getUsernameFromQuery();
+
+  if (!username) {
+    header.innerHTML = `<div style="font-size:16px;color:#C0392B">No profile specified.</div>`;
+    return;
+  }
+
+  const { data: profile, error } = await supabaseClient
+    .from('profiles')
+    .select('id, username, display_name, bio, is_private')
+    .eq('username', username)
+    .maybeSingle();
+
+  if (error || !profile) {
+    header.innerHTML = `<div style="font-size:16px;color:#C0392B">Couldn't find a profile for "${escapeHtml(username)}".</div>`;
+    return;
+  }
+
+  viewedProfile = profile;
+  const isMe = profile.id === me.id;
+
+  const { count: postCount } = await supabaseClient
+    .from('posts')
+    .select('id', { count: 'exact', head: true })
+    .eq('author_id', profile.id);
+
+  let followBtnHtml = '';
+  let isFollowing = false;
+  if (!isMe) {
+    const { data: existingFollow } = await supabaseClient
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', me.id)
+      .eq('following_id', profile.id)
+      .maybeSingle();
+    isFollowing = !!existingFollow;
+    followBtnHtml = `<button id="follow-btn" class="btn" style="padding:10px 24px;font-size:14px;margin-top:14px;${isFollowing ? 'background:#FBF3E9;color:#3A2E26' : 'background:#D9784F;color:#fff'}">${isFollowing ? 'Following' : 'Follow'}</button>`;
+  }
+
+  header.innerHTML = `
+    <div style="width:84px;height:84px;border-radius:50%;background:#D9784F;margin:0 auto 16px"></div>
+    <div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;color:#3A2E26">${escapeHtml(profile.display_name || profile.username)}</div>
+    <div style="font-size:14px;color:#A6927C;margin-top:4px">@${escapeHtml(profile.username)}</div>
+    ${profile.bio ? `<div style="font-size:15px;color:#3A2E26;margin-top:14px;max-width:420px;margin-left:auto;margin-right:auto">${escapeHtml(profile.bio)}</div>` : ''}
+    <div style="font-size:14px;color:#6B5E54;margin-top:14px">${postCount ?? 0} post${postCount === 1 ? '' : 's'}</div>
+    ${followBtnHtml}
+  `;
+
+  if (!isMe) {
+    document.getElementById('follow-btn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      if (isFollowing) {
+        await supabaseClient.from('follows').delete().eq('follower_id', me.id).eq('following_id', profile.id);
+      } else {
+        await supabaseClient.from('follows').insert({ follower_id: me.id, following_id: profile.id });
+      }
+      btn.disabled = false;
+      loadProfile();
+    });
+  }
+
+  await loadPosts(profile, isMe);
+}
+
+async function loadPosts(profile, isMe) {
+  const section = document.getElementById('posts-section');
+  section.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#A6927C">Loading posts…</div>`;
+
+  const { data: posts, error } = await supabaseClient
+    .from('posts')
+    .select('id, caption, location, created_at')
+    .eq('author_id', profile.id)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    section.innerHTML = `<div class="card" style="padding:24px;color:#C0392B">Couldn't load posts: ${escapeHtml(error.message)}</div>`;
+    return;
+  }
+
+  if (!posts || posts.length === 0) {
+    section.innerHTML = `
+      <div class="card" style="padding:32px;text-align:center">
+        <div style="font-size:16px;font-weight:600;color:#3A2E26">${isMe ? "You haven't" : escapeHtml(profile.display_name || profile.username) + " hasn't"} posted yet</div>
+      </div>`;
+    return;
+  }
+
+  section.innerHTML = posts.map(p => `
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 22px;font-size:13px;color:#A6927C">${timeAgo(p.created_at)}${p.location ? ' · ' + escapeHtml(p.location) : ''}</div>
+      ${p.caption ? `<div style="padding:0 22px 20px;font-size:15px;color:#3A2E26;white-space:pre-wrap">${escapeHtml(p.caption)}</div>` : ''}
+    </div>`).join('');
+}
+
+async function init() {
+  session = await requireSession();
+  if (!session) return;
+
+  me = await getMyProfile(session);
+  if (!me) return;
+
+  if (!getUsernameFromQuery()) {
+    window.location.href = 'profile.html?u=' + encodeURIComponent(me.username);
+    return;
+  }
+
+  document.getElementById('profile-link').href = 'profile.html?u=' + encodeURIComponent(me.username);
+  document.getElementById('logout-link').addEventListener('click', (e) => {
+    e.preventDefault();
+    logout();
+  });
+
+  await loadProfile();
+}
+
+init();
+</script>
+
+</body>
+</html>
