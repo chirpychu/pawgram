@@ -143,7 +143,7 @@ function renderPosts(posts, box) {
     const uname = p.author?.username || '';
     const images = (p.post_images || []).slice().sort((a, b) => a.position - b.position);
     const imageHtml = images.length
-      ? `<img src="${getPostImageUrl(images[0].storage_path)}" style="width:100%;max-height:360px;object-fit:cover;display:block">`
+      ? `<img src="${getPostImageUrl(images[0].storage_path)}" loading="lazy" decoding="async" style="width:100%;max-height:360px;object-fit:cover;display:block;background:#EFE3D2">`
       : '';
     return `
       <div class="card" style="padding:0;overflow:hidden">

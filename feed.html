@@ -207,7 +207,7 @@ function renderPost(p) {
     : '';
   const images = (p.post_images || []).slice().sort((a, b) => a.position - b.position);
   const imageHtml = images.length
-    ? `<img src="${getPostImageUrl(images[0].storage_path)}" style="width:100%;max-height:520px;object-fit:cover;display:block">`
+    ? `<img src="${getPostImageUrl(images[0].storage_path)}" loading="lazy" decoding="async" style="width:100%;max-height:520px;object-fit:cover;display:block;background:#EFE3D2">`
     : '';
   return `
     <div class="card" style="padding:0;overflow:hidden">
@@ -306,12 +306,15 @@ async function createPost() {
       return;
     }
 
-    const ext = (selectedFile.name.split('.').pop() || 'jpg').toLowerCase();
-    const storagePath = `${me.id}/${post.id}-${Date.now()}.${ext}`;
+    // Downscale/re-encode before uploading — an uncompressed camera photo
+    // can be several MB, which is slow to upload here and slow for anyone
+    // to load back down in the feed, especially on mobile data.
+    const compressed = await compressImage(selectedFile);
+    const storagePath = `${me.id}/${post.id}-${Date.now()}.jpg`;
 
     const { error: uploadError } = await supabaseClient.storage
       .from('post-images')
-      .upload(storagePath, selectedFile);
+      .upload(storagePath, compressed, { contentType: 'image/jpeg' });
 
     if (uploadError) {
       await supabaseClient.from('posts').delete().eq('id', post.id);
