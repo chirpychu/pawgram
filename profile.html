@@ -18,6 +18,8 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
 .btn{border:none;border-radius:999px;font-family:'Figtree',sans-serif;font-weight:600;cursor:pointer}
 .card{background:#fff;border-radius:20px;box-shadow:0 2px 10px rgba(0,0,0,.04)}
 
+#explore-dropdown{display:none;position:fixed;background:#fff;border-radius:14px;box-shadow:0 10px 24px rgba(0,0,0,.14);padding:12px;width:240px;z-index:1000}
+
 @media (max-width: 860px) {
   #app-shell { flex-direction: column !important; }
   #left-sidebar {
@@ -38,6 +40,7 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
   }
   #left-sidebar .logo { padding: 8px 10px 8px 4px !important; flex: none !important; }
   #left-sidebar .navitem { padding: 8px 10px !important; flex: none !important; }
+  #left-sidebar #explore-wrap,
   #left-sidebar #logout-link { margin-top: 0 !important; flex: none !important; }
   #main-col { padding: 16px !important; }
   #profile-header { padding: 20px !important; }
@@ -58,7 +61,15 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
   <div id="left-sidebar" style="width:230px;flex:0 0 230px;padding:28px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid #EAE0D2">
     <div class="logo" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:24px;padding:8px 16px 24px;color:#3A2E26">Pawgram</div>
     <a href="feed.html" class="navitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg><span class="nav-label">Home</span></a>
-    <div class="navitem" style="opacity:.5;cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nav-label">Explore</span></div>
+    <div id="explore-wrap" style="position:relative">
+      <a href="#" id="explore-toggle" class="navitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nav-label">Explore</span></a>
+      <div id="explore-dropdown">
+        <form id="explore-form" style="display:flex;gap:8px">
+          <input id="explore-input" type="text" placeholder="Search people or posts…" autocomplete="off" style="flex:1;min-width:0;padding:10px 12px;border:2px solid #E3D6C6;border-radius:10px;font-size:14px;font-family:'Figtree',sans-serif;outline:none">
+          <button type="submit" class="btn" style="background:#D9784F;color:#fff;padding:10px 14px;font-size:13px;flex:none">Go</button>
+        </form>
+      </div>
+    </div>
     <div class="navitem" style="opacity:.5;cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0112 5.5 5.5 5.5 0 0121.5 12c-2.5 4.4-9.5 9-9.5 9z"/></svg><span class="nav-label">Playdates</span></div>
     <div class="navitem" style="opacity:.5;cursor:default"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span class="nav-label">Messages</span></div>
     <a href="#" id="profile-link" class="navitem active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg><span class="nav-label">Profile</span></a>
@@ -291,6 +302,7 @@ async function init() {
     e.preventDefault();
     logout();
   });
+  initExploreDropdown();
 
   await loadProfile();
 }
