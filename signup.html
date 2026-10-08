@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign up — Pawgram</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<style>
+body{margin:0;background:#FBF3E9;font-family:'Figtree',sans-serif;color:#3A2E26;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
+.card{background:#fff;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:40px;width:100%;max-width:400px;box-sizing:border-box}
+.logo{font-family:'Fredoka',sans-serif;font-weight:700;font-size:26px;text-align:center;margin-bottom:8px}
+h1{font-family:'Fredoka',sans-serif;font-weight:600;font-size:22px;text-align:center;margin:0 0 28px;color:#3A2E26}
+label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;color:#3A2E26}
+input{width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:18px;outline:none}
+input:focus{border-color:#D9784F}
+button{width:100%;background:#D9784F;color:#fff;border:none;border-radius:999px;padding:14px;font-size:16px;font-weight:600;font-family:'Figtree',sans-serif;cursor:pointer}
+button:disabled{opacity:.6;cursor:default}
+.msg{font-size:14px;margin-top:14px;text-align:center}
+.msg.error{color:#C0392B}
+.msg.success{color:#2E7D32}
+.foot{text-align:center;margin-top:20px;font-size:14px;color:#6B5E54}
+.foot a{color:#D9784F;text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">🐾 Pawgram</div>
+  <h1>Join the pack</h1>
+
+  <form id="signup-form">
+    <label for="username">Username</label>
+    <input id="username" type="text" autocomplete="username" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only" required>
+
+    <label for="password">Password</label>
+    <input id="password" type="password" autocomplete="new-password" minlength="6" required>
+
+    <button id="submit-btn" type="submit">Sign up</button>
+    <div id="msg" class="msg"></div>
+  </form>
+
+  <div class="foot">Already on Pawgram? <a href="login.html">Log in</a></div>
+</div>
+
+<script>
+const form = document.getElementById('signup-form');
+const msg = document.getElementById('msg');
+const submitBtn = document.getElementById('submit-btn');
+
+function showMessage(text, type) {
+  msg.textContent = text;
+  msg.className = 'msg ' + type;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (SUPABASE_URL === "YOUR_SUPABASE_PROJECT_URL") {
+    showMessage('Supabase isn\'t configured yet — set SUPABASE_URL and SUPABASE_ANON_KEY in config.js.', 'error');
+    return;
+  }
+
+  submitBtn.disabled = true;
+  showMessage('Creating your account…', '');
+
+  // check the username isn't already taken
+  const { data: existing, error: lookupError } = await supabaseClient
+    .from('profiles')
+    .select('username')
+    .eq('username', username)
+    .maybeSingle();
+
+  if (lookupError) {
+    showMessage('Something went wrong checking that username. Try again.', 'error');
+    submitBtn.disabled = false;
+    return;
+  }
+  if (existing) {
+    showMessage('That username is already taken.', 'error');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  // Supabase Auth needs an email, so we generate a private one behind the
+  // scenes and store the real username in the user's metadata + profiles row.
+  const syntheticEmail = `${username}@users.pawgram.local`;
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: syntheticEmail,
+    password,
+    options: { data: { username } }
+  });
+
+  if (error) {
+    showMessage(error.message, 'error');
+    submitBtn.disabled = false;
+    return;
+  }
+
+  showMessage('Account created! Redirecting…', 'success');
+  setTimeout(() => { window.location.href = 'feed.html'; }, 1200);
+});
+</script>
+
+</body>
+</html>
