@@ -9,9 +9,20 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <style>
-body{margin:0;background:#FBF3E9;font-family:'Figtree',sans-serif;color:#3A2E26;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box}
-.card{background:#fff;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:40px;width:100%;max-width:400px;box-sizing:border-box}
-.logo{font-family:'Fredoka',sans-serif;font-weight:700;font-size:26px;text-align:center;margin-bottom:8px}
+body{margin:0;background:linear-gradient(160deg,#FBF3E9 0%,#F8E7D6 45%,#F3DCC6 100%);font-family:'Figtree',sans-serif;color:#3A2E26;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box;position:relative;overflow-x:hidden}
+
+.bg-decor{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.bg-decor .blob{position:absolute;border-radius:50%;filter:blur(50px)}
+.bg-decor .blob1{width:360px;height:360px;background:#D9784F2b;top:-110px;right:-90px}
+.bg-decor .blob2{width:420px;height:420px;background:#6B908030;bottom:-140px;left:-110px}
+.bg-decor .blob3{width:260px;height:260px;background:#F2C85433;top:42%;right:44%}
+.floaty{position:absolute;animation:bob 4.5s ease-in-out infinite;opacity:.9;filter:drop-shadow(0 6px 10px rgba(58,46,38,.08))}
+.spin-paw{animation:spinwag 5s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--r,0deg))}50%{transform:translateY(-16px) rotate(var(--r,0deg))}}
+@keyframes spinwag{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+
+.card{background:#fff;border-radius:24px;box-shadow:0 10px 30px rgba(0,0,0,.06);padding:40px;width:100%;max-width:400px;box-sizing:border-box;position:relative;z-index:1}
+.logo{display:block;font-family:'Fredoka',sans-serif;font-weight:700;font-size:26px;text-align:center;margin-bottom:8px;color:#3A2E26;text-decoration:none}
 h1{font-family:'Fredoka',sans-serif;font-weight:600;font-size:22px;text-align:center;margin:0 0 28px;color:#3A2E26}
 label{display:block;font-size:14px;font-weight:600;margin-bottom:6px;color:#3A2E26}
 input{width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:18px;outline:none}
@@ -26,13 +37,27 @@ button:disabled{opacity:.6;cursor:default}
 @media (max-width: 420px) {
   body { padding: 16px; }
   .card { padding: 28px 22px; }
+  .floaty { transform: scale(.8); }
 }
 </style>
 </head>
 <body>
 
+<div class="bg-decor" aria-hidden="true">
+  <div class="blob blob1"></div>
+  <div class="blob blob2"></div>
+  <div class="blob blob3"></div>
+  <span class="floaty" style="top:10%;right:11%;font-size:40px;--r:8deg;animation-delay:0s">🐱</span>
+  <span class="floaty" style="top:18%;left:9%;font-size:34px;--r:-8deg;animation-delay:.8s">🐶</span>
+  <span class="floaty" style="bottom:16%;right:13%;font-size:36px;--r:-6deg;animation-delay:1.4s">🐹</span>
+  <span class="floaty" style="bottom:24%;left:8%;font-size:32px;--r:6deg;animation-delay:.4s">🐾</span>
+  <span class="floaty spin-paw" style="top:46%;right:4%;font-size:26px;animation-delay:1.1s">🐾</span>
+  <span class="floaty spin-paw" style="top:36%;left:5%;font-size:24px;animation-delay:1.9s">🦴</span>
+  <span class="floaty" style="top:6%;right:46%;font-size:22px;--r:-4deg;animation-delay:2.2s">✨</span>
+</div>
+
 <div class="card">
-  <div class="logo">🐾 Pawgram</div>
+  <a href="index.html" class="logo">🐾 Pawgram</a>
   <h1>Join the pack</h1>
 
   <form id="signup-form">
