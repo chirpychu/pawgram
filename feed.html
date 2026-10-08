@@ -92,58 +92,78 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
 <script>
 let session, me;
 
+// Updates a placeholder element with an elapsed-seconds counter so a slow
+// request (e.g. a cold Supabase database waking up) doesn't look frozen.
+function startElapsedPlaceholder(container, label) {
+  const start = Date.now();
+  const render = (text) => {
+    container.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#A6927C">${text}</div>`;
+  };
+  render(label);
+  return setInterval(() => {
+    const secs = Math.floor((Date.now() - start) / 1000);
+    render(secs > 0 ? `${label} (${secs}s)` : label);
+  }, 500);
+}
+
 async function loadFeed() {
   const feedList = document.getElementById('feed-list');
-  feedList.innerHTML = '<div class="card" style="padding:32px;text-align:center;color:#A6927C">Loading your feed…</div>';
+  const timer = startElapsedPlaceholder(feedList, 'Loading your feed…');
 
-  const { data: follows, error: followsError } = await supabaseClient
-    .from('follows')
-    .select('following_id')
-    .eq('follower_id', me.id);
+  try {
+    const { data: follows, error: followsError } = await supabaseClient
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', me.id);
 
-  if (followsError) {
-    feedList.innerHTML = `<div class="card" style="padding:24px;color:#C0392B">Couldn't load the feed: ${escapeHtml(followsError.message)}</div>`;
-    return;
-  }
+    if (followsError) {
+      feedList.innerHTML = `<div class="card" style="padding:24px;color:#C0392B">Couldn't load the feed: ${escapeHtml(followsError.message)}</div>`;
+      return;
+    }
 
-  const authorIds = [me.id, ...follows.map(f => f.following_id)];
+    const authorIds = [me.id, ...follows.map(f => f.following_id)];
 
-  const { data: posts, error: postsError } = await supabaseClient
-    .from('posts')
-    .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name), post_images(storage_path, position)')
-    .in('author_id', authorIds)
-    .order('created_at', { ascending: false })
-    .limit(30);
+    const { data: posts, error: postsError } = await supabaseClient
+      .from('posts')
+      .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name), post_images(storage_path, position)')
+      .in('author_id', authorIds)
+      .order('created_at', { ascending: false })
+      .limit(30);
 
-  if (postsError) {
-    feedList.innerHTML = `<div class="card" style="padding:24px;color:#C0392B">Couldn't load the feed: ${escapeHtml(postsError.message)}</div>`;
-    return;
-  }
+    if (postsError) {
+      feedList.innerHTML = `<div class="card" style="padding:24px;color:#C0392B">Couldn't load the feed: ${escapeHtml(postsError.message)}</div>`;
+      return;
+    }
 
-  if (!posts || posts.length === 0) {
-    feedList.innerHTML = `
-      <div class="card" style="padding:32px;text-align:center">
-        <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#3A2E26">No posts yet</div>
-        <div style="font-size:14px;color:#6B5E54">Follow a few pet parents on the right to see their posts here — or share your own above.</div>
-      </div>`;
-    return;
-  }
+    if (!posts || posts.length === 0) {
+      feedList.innerHTML = `
+        <div class="card" style="padding:32px;text-align:center">
+          <div style="font-size:17px;font-weight:600;margin-bottom:8px;color:#3A2E26">No posts yet</div>
+          <div style="font-size:14px;color:#6B5E54">Follow a few pet parents on the right to see their posts here — or share your own above.</div>
+        </div>`;
+      return;
+    }
 
-  feedList.innerHTML = posts.map(renderPost).join('');
+    feedList.innerHTML = posts.map(renderPost).join('');
 
-  feedList.querySelectorAll('.delete-post-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      if (!confirm('Delete this post?')) return;
-      btn.disabled = true;
-      const { error } = await supabaseClient.from('posts').delete().eq('id', btn.dataset.id);
-      if (error) {
-        alert("Couldn't delete: " + error.message);
-        btn.disabled = false;
-        return;
-      }
-      loadFeed();
+    feedList.querySelectorAll('.delete-post-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this post?')) return;
+        btn.disabled = true;
+        const { error } = await supabaseClient.from('posts').delete().eq('id', btn.dataset.id);
+        if (error) {
+          alert("Couldn't delete: " + error.message);
+          btn.disabled = false;
+          return;
+        }
+        loadFeed();
+      });
     });
-  });
+  } catch (err) {
+    feedList.innerHTML = `<div class="card" style="padding:24px;color:#C0392B">Something went wrong: ${escapeHtml(err.message)}</div>`;
+  } finally {
+    clearInterval(timer);
+  }
 }
 
 function renderPost(p) {
@@ -229,6 +249,26 @@ function resetComposerImage() {
   document.getElementById('composer-preview-wrap').style.display = 'none';
 }
 
+// Keeps a button's label updating with an elapsed-seconds counter so a
+// slow request (e.g. a cold Supabase database waking up) doesn't look frozen.
+function startProgress(btn, label) {
+  const start = Date.now();
+  btn.disabled = true;
+  btn.dataset.originalText = btn.textContent;
+  const tick = () => {
+    const secs = Math.floor((Date.now() - start) / 1000);
+    btn.textContent = secs > 0 ? `${label} (${secs}s)` : label;
+  };
+  tick();
+  return setInterval(tick, 500);
+}
+
+function stopProgress(btn, timer) {
+  clearInterval(timer);
+  btn.disabled = false;
+  btn.textContent = btn.dataset.originalText || btn.textContent;
+}
+
 async function createPost() {
   const input = document.getElementById('composer-input');
   const caption = input.value.trim();
@@ -239,50 +279,52 @@ async function createPost() {
   }
 
   const postBtn = document.getElementById('post-btn');
-  postBtn.disabled = true;
   setComposerError('');
+  const timer = startProgress(postBtn, 'Posting…');
 
-  const { data: post, error: postError } = await supabaseClient
-    .from('posts')
-    .insert({ author_id: me.id, caption: caption || null })
-    .select('id')
-    .single();
+  try {
+    const { data: post, error: postError } = await supabaseClient
+      .from('posts')
+      .insert({ author_id: me.id, caption: caption || null })
+      .select('id')
+      .single();
 
-  if (postError) {
-    setComposerError("Couldn't post: " + postError.message);
-    postBtn.disabled = false;
-    return;
+    if (postError) {
+      setComposerError("Couldn't post: " + postError.message);
+      return;
+    }
+
+    const ext = (selectedFile.name.split('.').pop() || 'jpg').toLowerCase();
+    const storagePath = `${me.id}/${post.id}-${Date.now()}.${ext}`;
+
+    const { error: uploadError } = await supabaseClient.storage
+      .from('post-images')
+      .upload(storagePath, selectedFile);
+
+    if (uploadError) {
+      await supabaseClient.from('posts').delete().eq('id', post.id);
+      setComposerError("Couldn't upload the photo: " + uploadError.message);
+      return;
+    }
+
+    const { error: imageError } = await supabaseClient
+      .from('post_images')
+      .insert({ post_id: post.id, storage_path: storagePath, position: 0 });
+
+    if (imageError) {
+      await supabaseClient.from('posts').delete().eq('id', post.id);
+      setComposerError("Couldn't attach the photo: " + imageError.message);
+      return;
+    }
+
+    input.value = '';
+    resetComposerImage();
+    loadFeed();
+  } catch (err) {
+    setComposerError("Something went wrong: " + err.message);
+  } finally {
+    stopProgress(postBtn, timer);
   }
-
-  const ext = (selectedFile.name.split('.').pop() || 'jpg').toLowerCase();
-  const storagePath = `${me.id}/${post.id}-${Date.now()}.${ext}`;
-
-  const { error: uploadError } = await supabaseClient.storage
-    .from('post-images')
-    .upload(storagePath, selectedFile);
-
-  if (uploadError) {
-    await supabaseClient.from('posts').delete().eq('id', post.id);
-    setComposerError("Couldn't upload the photo: " + uploadError.message);
-    postBtn.disabled = false;
-    return;
-  }
-
-  const { error: imageError } = await supabaseClient
-    .from('post_images')
-    .insert({ post_id: post.id, storage_path: storagePath, position: 0 });
-
-  if (imageError) {
-    await supabaseClient.from('posts').delete().eq('id', post.id);
-    setComposerError("Couldn't attach the photo: " + imageError.message);
-    postBtn.disabled = false;
-    return;
-  }
-
-  input.value = '';
-  resetComposerImage();
-  postBtn.disabled = false;
-  loadFeed();
 }
 
 async function init() {
