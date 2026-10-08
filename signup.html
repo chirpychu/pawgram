@@ -88,7 +88,7 @@ form.addEventListener('submit', async (e) => {
 
   // Supabase Auth needs an email, so we generate a private one behind the
   // scenes and store the real username in the user's metadata + profiles row.
-  const syntheticEmail = `${username}@users.pawgram.local`;
+  const syntheticEmail = `${username}@pawgram-users.com`;
 
   const { data, error } = await supabaseClient.auth.signUp({
     email: syntheticEmail,

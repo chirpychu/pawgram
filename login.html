@@ -68,7 +68,7 @@ form.addEventListener('submit', async (e) => {
   submitBtn.disabled = true;
   showMessage('Logging in…', '');
 
-  const syntheticEmail = `${username}@users.pawgram.local`;
+  const syntheticEmail = `${username}@pawgram-users.com`;
   const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: syntheticEmail,
     password
