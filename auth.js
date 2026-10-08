@@ -43,6 +43,26 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
+// Keeps a button's label updating with an elapsed-seconds counter so a
+// slow request (e.g. a cold Supabase database waking up) doesn't look frozen.
+function startProgress(btn, label) {
+  const start = Date.now();
+  btn.disabled = true;
+  btn.dataset.originalText = btn.textContent;
+  const tick = () => {
+    const secs = Math.floor((Date.now() - start) / 1000);
+    btn.textContent = secs > 0 ? `${label} (${secs}s)` : label;
+  };
+  tick();
+  return setInterval(tick, 500);
+}
+
+function stopProgress(btn, timer) {
+  clearInterval(timer);
+  btn.disabled = false;
+  btn.textContent = btn.dataset.originalText || btn.textContent;
+}
+
 function timeAgo(isoString) {
   const seconds = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
   const units = [

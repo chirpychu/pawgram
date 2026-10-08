@@ -249,26 +249,6 @@ function resetComposerImage() {
   document.getElementById('composer-preview-wrap').style.display = 'none';
 }
 
-// Keeps a button's label updating with an elapsed-seconds counter so a
-// slow request (e.g. a cold Supabase database waking up) doesn't look frozen.
-function startProgress(btn, label) {
-  const start = Date.now();
-  btn.disabled = true;
-  btn.dataset.originalText = btn.textContent;
-  const tick = () => {
-    const secs = Math.floor((Date.now() - start) / 1000);
-    btn.textContent = secs > 0 ? `${label} (${secs}s)` : label;
-  };
-  tick();
-  return setInterval(tick, 500);
-}
-
-function stopProgress(btn, timer) {
-  clearInterval(timer);
-  btn.disabled = false;
-  btn.textContent = btn.dataset.originalText || btn.textContent;
-}
-
 async function createPost() {
   const input = document.getElementById('composer-input');
   const caption = input.value.trim();

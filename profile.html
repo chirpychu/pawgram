@@ -94,13 +94,29 @@ async function loadProfile() {
     followBtnHtml = `<button id="follow-btn" class="btn" style="padding:10px 24px;font-size:14px;margin-top:14px;${isFollowing ? 'background:#FBF3E9;color:#3A2E26' : 'background:#D9784F;color:#fff'}">${isFollowing ? 'Following' : 'Follow'}</button>`;
   }
 
+  const editBtnHtml = isMe
+    ? `<button id="edit-profile-btn" class="btn" style="padding:8px 20px;font-size:13px;margin-top:14px;background:#FBF3E9;color:#3A2E26">Edit display name</button>`
+    : '';
+
   header.innerHTML = `
-    <div style="width:84px;height:84px;border-radius:50%;background:#D9784F;margin:0 auto 16px"></div>
-    <div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;color:#3A2E26">${escapeHtml(profile.display_name || profile.username)}</div>
-    <div style="font-size:14px;color:#A6927C;margin-top:4px">@${escapeHtml(profile.username)}</div>
-    ${profile.bio ? `<div style="font-size:15px;color:#3A2E26;margin-top:14px;max-width:420px;margin-left:auto;margin-right:auto">${escapeHtml(profile.bio)}</div>` : ''}
-    <div style="font-size:14px;color:#6B5E54;margin-top:14px">${postCount ?? 0} post${postCount === 1 ? '' : 's'}</div>
-    ${followBtnHtml}
+    <div id="profile-view">
+      <div style="width:84px;height:84px;border-radius:50%;background:#D9784F;margin:0 auto 16px"></div>
+      <div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;color:#3A2E26">${escapeHtml(profile.display_name || profile.username)}</div>
+      <div style="font-size:14px;color:#A6927C;margin-top:4px">@${escapeHtml(profile.username)}</div>
+      ${profile.bio ? `<div style="font-size:15px;color:#3A2E26;margin-top:14px;max-width:420px;margin-left:auto;margin-right:auto">${escapeHtml(profile.bio)}</div>` : ''}
+      <div style="font-size:14px;color:#6B5E54;margin-top:14px">${postCount ?? 0} post${postCount === 1 ? '' : 's'}</div>
+      ${followBtnHtml}
+      ${editBtnHtml}
+    </div>
+    <div id="profile-edit" style="display:none;max-width:320px;margin:0 auto;text-align:left">
+      <label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#3A2E26">Display name</label>
+      <input id="edit-display-name" type="text" maxlength="40" value="${escapeHtml(profile.display_name || '')}" style="width:100%;box-sizing:border-box;padding:10px 12px;border:2px solid #E3D6C6;border-radius:10px;font-size:14px;font-family:'Figtree',sans-serif;margin-bottom:12px;outline:none">
+      <div id="edit-profile-error" style="font-size:13px;color:#C0392B;margin-bottom:8px"></div>
+      <div style="display:flex;gap:10px">
+        <button id="save-profile-btn" class="btn" style="flex:1;background:#D9784F;color:#fff;padding:10px;font-size:14px">Save</button>
+        <button id="cancel-edit-btn" class="btn" style="flex:1;background:#FBF3E9;color:#3A2E26;padding:10px;font-size:14px">Cancel</button>
+      </div>
+    </div>
   `;
 
   if (!isMe) {
@@ -114,6 +130,50 @@ async function loadProfile() {
       }
       btn.disabled = false;
       loadProfile();
+    });
+  } else {
+    const viewEl = document.getElementById('profile-view');
+    const editEl = document.getElementById('profile-edit');
+
+    document.getElementById('edit-profile-btn').addEventListener('click', () => {
+      viewEl.style.display = 'none';
+      editEl.style.display = 'block';
+      document.getElementById('edit-display-name').focus();
+    });
+
+    document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+      editEl.style.display = 'none';
+      viewEl.style.display = 'block';
+    });
+
+    document.getElementById('save-profile-btn').addEventListener('click', async (e) => {
+      const btn = e.currentTarget;
+      const errorEl = document.getElementById('edit-profile-error');
+      const newDisplayName = document.getElementById('edit-display-name').value.trim();
+
+      if (!newDisplayName) {
+        errorEl.textContent = 'Display name cannot be empty.';
+        return;
+      }
+
+      errorEl.textContent = '';
+      const timer = startProgress(btn, 'Saving…');
+      try {
+        const { error: updateError } = await supabaseClient
+          .from('profiles')
+          .update({ display_name: newDisplayName })
+          .eq('id', me.id);
+
+        if (updateError) {
+          errorEl.textContent = "Couldn't save: " + updateError.message;
+          return;
+        }
+
+        me.display_name = newDisplayName;
+        await loadProfile();
+      } finally {
+        stopProgress(btn, timer);
+      }
     });
   }
 
