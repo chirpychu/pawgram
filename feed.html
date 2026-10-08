@@ -41,10 +41,21 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
   <!-- CENTER FEED -->
   <div style="flex:1 1 auto;min-width:0;padding:28px 28px;display:flex;flex-direction:column;gap:20px">
 
-    <div class="card" style="padding:18px 22px;display:flex;align-items:center;gap:14px">
-      <div style="width:44px;height:44px;border-radius:50%;background:#6B9080;flex:0 0 44px"></div>
-      <input id="composer-input" type="text" placeholder="Share something…" style="flex:1;background:#FBF3E9;border:none;border-radius:999px;padding:12px 18px;color:#3A2E26;font-size:15px;font-family:'Figtree',sans-serif;outline:none">
-      <button id="post-btn" class="btn" style="background:#D9784F;color:#fff;padding:10px 20px;font-size:14px">Post</button>
+    <div class="card" style="padding:18px 22px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:50%;background:#6B9080;flex:0 0 44px"></div>
+        <input id="composer-input" type="text" placeholder="Share something…" style="flex:1;background:#FBF3E9;border:none;border-radius:999px;padding:12px 18px;color:#3A2E26;font-size:15px;font-family:'Figtree',sans-serif;outline:none">
+        <button id="post-btn" class="btn" style="background:#D9784F;color:#fff;padding:10px 20px;font-size:14px">Post</button>
+      </div>
+      <div id="composer-preview-wrap" style="display:none;align-items:center;gap:12px;padding-left:58px">
+        <img id="composer-preview" style="width:72px;height:72px;object-fit:cover;border-radius:12px">
+        <button id="composer-remove-image" class="btn" style="background:#FBF3E9;color:#3A2E26;padding:7px 14px;font-size:13px">Remove photo</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;padding-left:58px">
+        <label for="composer-file" class="btn" style="background:#FBF3E9;color:#D9784F;padding:8px 16px;font-size:13px;cursor:pointer">📷 Add a photo of your pet</label>
+        <input id="composer-file" type="file" accept="image/*" style="display:none">
+        <div id="composer-error" style="font-size:13px;color:#C0392B"></div>
+      </div>
     </div>
 
     <div id="feed-list" style="display:flex;flex-direction:column;gap:20px">
@@ -99,7 +110,7 @@ async function loadFeed() {
 
   const { data: posts, error: postsError } = await supabaseClient
     .from('posts')
-    .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name)')
+    .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name), post_images(storage_path, position)')
     .in('author_id', authorIds)
     .order('created_at', { ascending: false })
     .limit(30);
@@ -142,6 +153,10 @@ function renderPost(p) {
   const deleteBtnHtml = p.author_id === me.id
     ? `<button class="delete-post-btn" data-id="${p.id}" title="Delete post" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#A6927C;font-size:13px;padding:6px">✕</button>`
     : '';
+  const images = (p.post_images || []).slice().sort((a, b) => a.position - b.position);
+  const imageHtml = images.length
+    ? `<img src="${getPostImageUrl(images[0].storage_path)}" style="width:100%;max-height:520px;object-fit:cover;display:block">`
+    : '';
   return `
     <div class="card" style="padding:0;overflow:hidden">
       <div style="display:flex;align-items:center;gap:12px;padding:18px 22px">
@@ -152,6 +167,7 @@ function renderPost(p) {
         </div>
         ${deleteBtnHtml}
       </div>
+      ${imageHtml}
       ${p.caption ? `<div style="padding:16px 22px;font-size:15px;color:#3A2E26;white-space:pre-wrap">${escapeHtml(p.caption)}</div>` : ''}
     </div>`;
 }
@@ -201,19 +217,71 @@ async function loadSuggestions() {
   });
 }
 
+let selectedFile = null;
+
+function setComposerError(msg) {
+  document.getElementById('composer-error').textContent = msg || '';
+}
+
+function resetComposerImage() {
+  selectedFile = null;
+  document.getElementById('composer-file').value = '';
+  document.getElementById('composer-preview-wrap').style.display = 'none';
+}
+
 async function createPost() {
   const input = document.getElementById('composer-input');
   const caption = input.value.trim();
-  if (!caption) return;
-  const postBtn = document.getElementById('post-btn');
-  postBtn.disabled = true;
-  const { error } = await supabaseClient.from('posts').insert({ author_id: me.id, caption });
-  postBtn.disabled = false;
-  if (error) {
-    alert("Couldn't post: " + error.message);
+
+  if (!selectedFile) {
+    setComposerError('Add a photo of your pet before posting — photo-less posts aren\'t allowed.');
     return;
   }
+
+  const postBtn = document.getElementById('post-btn');
+  postBtn.disabled = true;
+  setComposerError('');
+
+  const { data: post, error: postError } = await supabaseClient
+    .from('posts')
+    .insert({ author_id: me.id, caption: caption || null })
+    .select('id')
+    .single();
+
+  if (postError) {
+    setComposerError("Couldn't post: " + postError.message);
+    postBtn.disabled = false;
+    return;
+  }
+
+  const ext = (selectedFile.name.split('.').pop() || 'jpg').toLowerCase();
+  const storagePath = `${me.id}/${post.id}-${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabaseClient.storage
+    .from('post-images')
+    .upload(storagePath, selectedFile);
+
+  if (uploadError) {
+    await supabaseClient.from('posts').delete().eq('id', post.id);
+    setComposerError("Couldn't upload the photo: " + uploadError.message);
+    postBtn.disabled = false;
+    return;
+  }
+
+  const { error: imageError } = await supabaseClient
+    .from('post_images')
+    .insert({ post_id: post.id, storage_path: storagePath, position: 0 });
+
+  if (imageError) {
+    await supabaseClient.from('posts').delete().eq('id', post.id);
+    setComposerError("Couldn't attach the photo: " + imageError.message);
+    postBtn.disabled = false;
+    return;
+  }
+
   input.value = '';
+  resetComposerImage();
+  postBtn.disabled = false;
   loadFeed();
 }
 
@@ -233,6 +301,19 @@ async function init() {
   document.getElementById('composer-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') createPost();
   });
+  document.getElementById('composer-file').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedFile = file;
+    setComposerError('');
+    const reader = new FileReader();
+    reader.onload = () => {
+      document.getElementById('composer-preview').src = reader.result;
+      document.getElementById('composer-preview-wrap').style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('composer-remove-image').addEventListener('click', resetComposerImage);
   document.getElementById('sidebar-new-post').addEventListener('click', () => {
     document.getElementById('composer-input').focus();
   });

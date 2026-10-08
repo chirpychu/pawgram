@@ -126,7 +126,7 @@ async function loadPosts(profile, isMe) {
 
   const { data: posts, error } = await supabaseClient
     .from('posts')
-    .select('id, caption, location, created_at')
+    .select('id, caption, location, created_at, post_images(storage_path, position)')
     .eq('author_id', profile.id)
     .order('created_at', { ascending: false });
 
@@ -143,14 +143,21 @@ async function loadPosts(profile, isMe) {
     return;
   }
 
-  section.innerHTML = posts.map(p => `
+  section.innerHTML = posts.map(p => {
+    const images = (p.post_images || []).slice().sort((a, b) => a.position - b.position);
+    const imageHtml = images.length
+      ? `<img src="${getPostImageUrl(images[0].storage_path)}" style="width:100%;max-height:520px;object-fit:cover;display:block">`
+      : '';
+    return `
     <div class="card" style="padding:0;overflow:hidden">
       <div style="display:flex;align-items:center;padding:16px 22px">
         <div style="font-size:13px;color:#A6927C">${timeAgo(p.created_at)}${p.location ? ' · ' + escapeHtml(p.location) : ''}</div>
         ${isMe ? `<button class="delete-post-btn" data-id="${p.id}" title="Delete post" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#A6927C;font-size:13px;padding:6px">✕</button>` : ''}
       </div>
-      ${p.caption ? `<div style="padding:0 22px 20px;font-size:15px;color:#3A2E26;white-space:pre-wrap">${escapeHtml(p.caption)}</div>` : ''}
-    </div>`).join('');
+      ${imageHtml}
+      ${p.caption ? `<div style="padding:16px 22px;font-size:15px;color:#3A2E26;white-space:pre-wrap">${escapeHtml(p.caption)}</div>` : ''}
+    </div>`;
+  }).join('');
 
   if (isMe) {
     section.querySelectorAll('.delete-post-btn').forEach(btn => {

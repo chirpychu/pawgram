@@ -26,6 +26,12 @@ async function getMyProfile(session) {
   return data;
 }
 
+// Builds the public URL for a file in the post-images storage bucket.
+function getPostImageUrl(storagePath) {
+  const { data } = supabaseClient.storage.from('post-images').getPublicUrl(storagePath);
+  return data.publicUrl;
+}
+
 async function logout() {
   await supabaseClient.auth.signOut();
   window.location.href = 'login.html';
