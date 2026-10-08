@@ -42,6 +42,9 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
   #left-sidebar #logout-link { margin-top: 0 !important; flex: none !important; }
   #center-col { padding: 16px !important; }
   #right-sidebar { width: 100% !important; flex: none !important; padding: 0 16px 16px !important; }
+  /* the top bar's Profile icon already covers this, so hide the
+     duplicate "View your profile" card on small screens */
+  #my-profile-card { display: none !important; }
   .composer-indent { padding-left: 0 !important; }
 }
 @media (max-width: 420px) {
