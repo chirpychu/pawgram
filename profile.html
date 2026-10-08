@@ -159,18 +159,26 @@ async function loadProfile() {
       errorEl.textContent = '';
       const timer = startProgress(btn, 'Saving…');
       try {
-        const { error: updateError } = await supabaseClient
+        // .select().single() forces Postgres to report back the row it
+        // actually changed — without it, Supabase's update() can return a
+        // "success" with zero rows affected (e.g. if a policy silently
+        // blocks it), and the save would look like it worked but didn't.
+        const { data: updated, error: updateError } = await supabaseClient
           .from('profiles')
           .update({ display_name: newDisplayName })
-          .eq('id', me.id);
+          .eq('id', me.id)
+          .select('display_name')
+          .single();
 
         if (updateError) {
           errorEl.textContent = "Couldn't save: " + updateError.message;
           return;
         }
 
-        me.display_name = newDisplayName;
+        me.display_name = updated.display_name;
         await loadProfile();
+      } catch (err) {
+        errorEl.textContent = "Something went wrong: " + err.message;
       } finally {
         stopProgress(btn, timer);
       }
