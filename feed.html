@@ -99,7 +99,7 @@ async function loadFeed() {
 
   const { data: posts, error: postsError } = await supabaseClient
     .from('posts')
-    .select('id, caption, location, created_at, author:profiles!posts_author_id_fkey(username, display_name)')
+    .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name)')
     .in('author_id', authorIds)
     .order('created_at', { ascending: false })
     .limit(30);
@@ -119,12 +119,29 @@ async function loadFeed() {
   }
 
   feedList.innerHTML = posts.map(renderPost).join('');
+
+  feedList.querySelectorAll('.delete-post-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('Delete this post?')) return;
+      btn.disabled = true;
+      const { error } = await supabaseClient.from('posts').delete().eq('id', btn.dataset.id);
+      if (error) {
+        alert("Couldn't delete: " + error.message);
+        btn.disabled = false;
+        return;
+      }
+      loadFeed();
+    });
+  });
 }
 
 function renderPost(p) {
   const name = p.author?.display_name || p.author?.username || 'Someone';
   const uname = p.author?.username || '';
   const meta = timeAgo(p.created_at) + (p.location ? ' · ' + escapeHtml(p.location) : '');
+  const deleteBtnHtml = p.author_id === me.id
+    ? `<button class="delete-post-btn" data-id="${p.id}" title="Delete post" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#A6927C;font-size:13px;padding:6px">✕</button>`
+    : '';
   return `
     <div class="card" style="padding:0;overflow:hidden">
       <div style="display:flex;align-items:center;gap:12px;padding:18px 22px">
@@ -133,6 +150,7 @@ function renderPost(p) {
           <a href="profile.html?u=${encodeURIComponent(uname)}" style="font-weight:600;font-size:15px;color:#3A2E26">${escapeHtml(name)}</a>
           <div style="font-size:13px;color:#A6927C">${meta}</div>
         </div>
+        ${deleteBtnHtml}
       </div>
       ${p.caption ? `<div style="padding:16px 22px;font-size:15px;color:#3A2E26;white-space:pre-wrap">${escapeHtml(p.caption)}</div>` : ''}
     </div>`;

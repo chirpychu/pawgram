@@ -145,9 +145,28 @@ async function loadPosts(profile, isMe) {
 
   section.innerHTML = posts.map(p => `
     <div class="card" style="padding:0;overflow:hidden">
-      <div style="padding:16px 22px;font-size:13px;color:#A6927C">${timeAgo(p.created_at)}${p.location ? ' · ' + escapeHtml(p.location) : ''}</div>
+      <div style="display:flex;align-items:center;padding:16px 22px">
+        <div style="font-size:13px;color:#A6927C">${timeAgo(p.created_at)}${p.location ? ' · ' + escapeHtml(p.location) : ''}</div>
+        ${isMe ? `<button class="delete-post-btn" data-id="${p.id}" title="Delete post" style="margin-left:auto;background:none;border:none;cursor:pointer;color:#A6927C;font-size:13px;padding:6px">✕</button>` : ''}
+      </div>
       ${p.caption ? `<div style="padding:0 22px 20px;font-size:15px;color:#3A2E26;white-space:pre-wrap">${escapeHtml(p.caption)}</div>` : ''}
     </div>`).join('');
+
+  if (isMe) {
+    section.querySelectorAll('.delete-post-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this post?')) return;
+        btn.disabled = true;
+        const { error } = await supabaseClient.from('posts').delete().eq('id', btn.dataset.id);
+        if (error) {
+          alert("Couldn't delete: " + error.message);
+          btn.disabled = false;
+          return;
+        }
+        loadProfile();
+      });
+    });
+  }
 }
 
 async function init() {
