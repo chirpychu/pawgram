@@ -20,4 +20,4 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_
 //
 // This key is safe to expose in client-side code — Ticketmaster's Consumer Key
 // is designed for direct browser use and only grants read access to public event listings.
-const TICKETMASTER_API_KEY = "YOUR_TICKETMASTER_API_KEY";
+const TICKETMASTER_API_KEY = "C5Xuc6E78XWD2tMtRoNvM3fh4Y2zwFd1";
