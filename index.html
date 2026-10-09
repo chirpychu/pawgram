@@ -6,6 +6,8 @@
 <title>Pawgram</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
 <style>
 body{margin:0;background:#FBF3E9;font-family:'Figtree',sans-serif;color:#3A2E26}
 a{color:#D9784F;text-decoration:none}
@@ -97,21 +99,8 @@ a:hover{color:#3A2E26}
   <!-- FEED PREVIEW -->
   <div class="feed-preview-row" style="padding:16px 48px 72px">
     <h2 style="font-family:'Fredoka',sans-serif;font-size:28px;color:#3A2E26;margin:0 0 24px">Fresh from the pack</h2>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px">
-      <div style="background:#EFE3D2;border-radius:16px;height:200px;overflow:hidden">
-        <img src="assets/images/feed-retriever.jpg" alt="Golden retriever and cat cuddled together on a couch" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
-      </div>
-      <div style="background:#EFE3D2;border-radius:16px;height:200px;overflow:hidden">
-        <img src="assets/images/feed-corgi.jpg" alt="Corgi playing with a tennis ball in the grass" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
-      </div>
-      <div style="background:#EFE3D2;border-radius:16px;height:200px;overflow:hidden">
-        <img src="assets/images/feed-puppy-cat.jpg" alt="Puppy and cat cuddled together on a couch" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
-      </div>
-      <div style="background:#D9784F;border-radius:16px;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px;box-sizing:border-box">
-        <div style="font-size:30px;margin-bottom:8px">🐾</div>
-        <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;margin-bottom:12px">Add your pet to the pack</div>
-        <a href="signup.html" class="btn" style="background:#fff;color:#D9784F;padding:10px 20px;font-size:14px;text-decoration:none">Join free</a>
-      </div>
+    <div id="fresh-pack-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px">
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:#A6927C;font-size:14px">Loading recent posts…</div>
     </div>
   </div>
 
@@ -126,6 +115,71 @@ a:hover{color:#3A2E26}
   </div>
 
 </div>
+
+<script>
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str ?? '';
+  return div.innerHTML;
+}
+
+function getPostImageUrl(storagePath) {
+  const { data } = supabaseClient.storage.from('post-images').getPublicUrl(storagePath);
+  return data.publicUrl;
+}
+
+function ctaTile() {
+  return `<div style="background:#D9784F;border-radius:16px;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px;box-sizing:border-box">
+    <div style="font-size:30px;margin-bottom:8px">🐾</div>
+    <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;margin-bottom:12px">Add your pet to the pack</div>
+    <a href="signup.html" class="btn" style="background:#fff;color:#D9784F;padding:10px 20px;font-size:14px;text-decoration:none">Join free</a>
+  </div>`;
+}
+
+function postTile(p) {
+  const images = (p.post_images || []).slice().sort((a, b) => a.position - b.position);
+  const url = getPostImageUrl(images[0].storage_path);
+  const name = p.author?.display_name || p.author?.username || 'A Pawgram pet';
+  const profileUrl = p.author?.username ? `profile.html?u=${encodeURIComponent(p.author.username)}` : '#';
+  return `<a href="${profileUrl}" style="position:relative;display:block;background:#EFE3D2;border-radius:16px;height:200px;overflow:hidden;text-decoration:none">
+    <img src="${escapeHtml(url)}" alt="A pet shared by ${escapeHtml(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
+    <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 12px;background:linear-gradient(0deg,rgba(40,28,20,.65),transparent);color:#fff;font-size:13px;font-weight:600;font-family:'Figtree',sans-serif">${escapeHtml(name)}</div>
+  </a>`;
+}
+
+async function loadFreshFromThePack() {
+  const grid = document.getElementById('fresh-pack-grid');
+  try {
+    const { data: posts, error } = await supabaseClient
+      .from('posts')
+      .select('id, caption, created_at, author:profiles!posts_author_id_fkey!inner(username, display_name, is_private), post_images(storage_path, position)')
+      .eq('author.is_private', false)
+      .order('created_at', { ascending: false })
+      .limit(8);
+
+    if (error) throw error;
+
+    const withPhotos = (posts || []).filter(p => p.post_images && p.post_images.length > 0).slice(0, 3);
+
+    if (withPhotos.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;background:#fff;border-radius:16px;padding:40px 24px;text-align:center;color:#6B5E54">
+          <div style="font-size:32px;margin-bottom:10px">🐾</div>
+          <p style="margin:0 0 18px;font-size:15px">No public posts yet — be the first to share your pet's moment!</p>
+          <a href="signup.html" class="btn" style="background:#D9784F;color:#fff;padding:12px 26px;font-size:15px;text-decoration:none">Join free</a>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = withPhotos.map(postTile).join('') + ctaTile();
+  } catch (err) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#A6927C;font-size:14px">Couldn't load recent posts right now.</div>`;
+    console.error('Could not load fresh-from-the-pack posts:', err.message);
+  }
+}
+
+loadFreshFromThePack();
+</script>
 
 </body>
 </html>
