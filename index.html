@@ -29,6 +29,28 @@ a:hover{color:#3A2E26}
 @keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.15)}}
 @keyframes floatup{0%{transform:translateY(0);opacity:0}15%{opacity:1}100%{transform:translateY(-70px);opacity:0}}
 
+/* Hero entrance: words pop in one by one, then the rest fades up */
+@keyframes wordIn{0%{opacity:0;transform:translateY(18px) rotate(-1deg)}100%{opacity:1;transform:translateY(0) rotate(0)}}
+@keyframes heroFadeUp{0%{opacity:0;transform:translateY(20px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes heroImageIn{0%{opacity:0;transform:scale(1.04)}100%{opacity:1;transform:scale(1)}}
+.hero-cover{animation:heroImageIn 1s cubic-bezier(.22,1,.36,1) both}
+.word{display:inline-block;opacity:0;animation:wordIn .7s cubic-bezier(.22,1,.36,1) forwards}
+.hero-fade{opacity:0;animation:heroFadeUp .8s cubic-bezier(.22,1,.36,1) forwards}
+
+/* Scroll-triggered section reveals */
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .8s cubic-bezier(.22,1,.36,1),transform .8s cubic-bezier(.22,1,.36,1)}
+.reveal.is-visible{opacity:1;transform:translateY(0)}
+.reveal-stagger > *{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,1,.36,1),transform .7s cubic-bezier(.22,1,.36,1)}
+.reveal-stagger.is-visible > *{opacity:1;transform:translateY(0)}
+.reveal-stagger.is-visible > *:nth-child(1){transition-delay:0s}
+.reveal-stagger.is-visible > *:nth-child(2){transition-delay:.12s}
+.reveal-stagger.is-visible > *:nth-child(3){transition-delay:.24s}
+.reveal-stagger.is-visible > *:nth-child(4){transition-delay:.36s}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cover, .word, .hero-fade, .reveal, .reveal-stagger > * { animation:none !important; transition:none !important; opacity:1 !important; transform:none !important; }
+}
+
 @media (max-width: 700px) {
   .nav-row { padding: 18px 20px !important; }
   .hero-cover { margin: 0 20px 16px !important; }
@@ -68,9 +90,9 @@ a:hover{color:#3A2E26}
     <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(40,28,20,.72) 0%,rgba(40,28,20,.38) 38%,rgba(40,28,20,0) 65%)"></div>
     <div style="position:absolute;top:18px;left:22px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:13px;color:#3A2E26;background:#fff;padding:7px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.12)">📸 Real pets, real moments</div>
     <div class="hero-cover-text" style="position:absolute;left:0;right:0;bottom:0;padding:40px">
-      <h1 class="hero-heading" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:52px;line-height:1.05;margin:0 0 16px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.25)">Where pet lovers connect.</h1>
-      <p style="font-size:18px;line-height:1.6;color:#F6EEE4;margin:0 0 28px;max-width:480px">Share your pet's best moments, meet other owners nearby, and set up playdates — all in one friendly place.</p>
-      <div class="hero-actions" style="display:flex;gap:16px;flex-wrap:wrap">
+      <h1 class="hero-heading" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:52px;line-height:1.05;margin:0 0 16px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.25)"><span class="word" style="animation-delay:.15s">Where</span> <span class="word" style="animation-delay:.3s">pet</span> <span class="word" style="animation-delay:.45s">lovers</span> <span class="word" style="animation-delay:.6s">connect.</span></h1>
+      <p class="hero-fade" style="animation-delay:.9s;font-size:18px;line-height:1.6;color:#F6EEE4;margin:0 0 28px;max-width:480px">Share your pet's best moments, meet other owners nearby, and set up playdates — all in one friendly place.</p>
+      <div class="hero-actions hero-fade" style="animation-delay:1.1s;display:flex;gap:16px;flex-wrap:wrap">
         <a href="signup.html" class="btn" style="background:#D9784F;color:#fff;padding:16px 32px;font-size:17px;text-decoration:none">Create your pet's profile</a>
         <button class="btn" style="background:rgba(255,255,255,.92);color:#3A2E26;border:none;padding:16px 28px;font-size:17px">See how it works</button>
       </div>
@@ -78,7 +100,7 @@ a:hover{color:#3A2E26}
   </div>
 
   <!-- FEATURES -->
-  <div class="features-row" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;padding:24px 48px 56px">
+  <div class="features-row reveal-stagger" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;padding:24px 48px 56px">
     <div style="background:#fff;border-radius:20px;padding:30px;box-shadow:0 2px 10px rgba(0,0,0,.04)">
       <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D9784F" stroke-width="2"><rect x="3" y="5" width="18" height="15" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 5l1.5-2h5L16 5"/></svg>
       <h3 style="font-family:'Fredoka',sans-serif;font-size:20px;margin:16px 0 8px;color:#3A2E26">Share photos</h3>
@@ -97,7 +119,7 @@ a:hover{color:#3A2E26}
   </div>
 
   <!-- FEED PREVIEW -->
-  <div class="feed-preview-row" style="padding:16px 48px 72px">
+  <div class="feed-preview-row reveal" style="padding:16px 48px 72px">
     <h2 style="font-family:'Fredoka',sans-serif;font-size:28px;color:#3A2E26;margin:0 0 24px">Fresh from the pack</h2>
     <div id="fresh-pack-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px">
       <div style="grid-column:1/-1;text-align:center;padding:30px;color:#A6927C;font-size:14px">Loading recent posts…</div>
@@ -105,7 +127,7 @@ a:hover{color:#3A2E26}
   </div>
 
   <!-- PLAYDATES / EVENTS -->
-  <div id="playdates-section" class="playdates-row" style="padding:16px 48px 72px;scroll-margin-top:24px">
+  <div id="playdates-section" class="playdates-row reveal" style="padding:16px 48px 72px;scroll-margin-top:24px">
     <h2 style="font-family:'Fredoka',sans-serif;font-size:28px;color:#3A2E26;margin:0 0 8px">Find a playdate near you</h2>
     <p style="margin:0 0 24px;color:#6B5E54;font-size:15px;max-width:560px">Search pet-friendly events, meetups and expos happening around the world, powered by Ticketmaster.</p>
 
@@ -124,7 +146,7 @@ a:hover{color:#3A2E26}
   </div>
 
   <!-- FOOTER -->
-  <div class="footer-row" style="border-top:1px solid #EAE0D2;padding:28px 48px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:#A6927C;font-size:14px">
+  <div class="footer-row reveal" style="border-top:1px solid #EAE0D2;padding:28px 48px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:#A6927C;font-size:14px">
     <div>Pawgram — made for pets and their people</div>
     <div style="display:flex;gap:20px">
       <a href="#" style="color:#A6927C">Privacy</a>
@@ -136,6 +158,28 @@ a:hover{color:#3A2E26}
 </div>
 
 <script>
+// --- Scroll-triggered entrance animations ---
+(function () {
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
+
+  if (reduceMotion || !('IntersectionObserver' in window)) {
+    revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+    return;
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  revealEls.forEach(function (el) { observer.observe(el); });
+})();
+
 function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str ?? '';
