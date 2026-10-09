@@ -51,6 +51,19 @@ a:hover{color:#3A2E26}
   .hero-cover, .word, .hero-fade, .reveal, .reveal-stagger > * { animation:none !important; transition:none !important; opacity:1 !important; transform:none !important; }
 }
 
+/* Auth drawer: slides in from the right, nav bar stays put, cover shrinks over */
+#auth-backdrop{position:fixed;inset:0;background:rgba(40,28,20,.38);opacity:0;pointer-events:none;transition:opacity .35s ease;z-index:999}
+#auth-backdrop.is-open{opacity:1;pointer-events:auto}
+#auth-drawer{position:fixed;top:0;right:0;height:100vh;width:420px;max-width:92vw;background:#fff;box-shadow:-14px 0 40px rgba(58,46,38,.18);transform:translateX(100%);transition:transform .45s cubic-bezier(.22,1,.36,1);z-index:1000;overflow-y:auto}
+#auth-drawer.is-open{transform:translateX(0)}
+.hero-cover{transition:margin-right .45s cubic-bezier(.22,1,.36,1),filter .45s ease}
+.hero-cover.is-shrunk{margin-right:420px !important;filter:brightness(.93)}
+#auth-tab-login,#auth-tab-signup{background:transparent;color:#6B5E54;border:none}
+#auth-tab-login.active,#auth-tab-signup.active{background:#fff;color:#3A2E26;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+@media (max-width: 700px) {
+  .hero-cover.is-shrunk{margin-right:20px !important}
+}
+
 @media (max-width: 700px) {
   .nav-row { padding: 18px 20px !important; }
   .hero-cover { margin: 0 20px 16px !important; }
@@ -165,6 +178,46 @@ a:hover{color:#3A2E26}
 
 </div>
 
+<!-- AUTH DRAWER (slides in from the right for Log in / Sign up, no page navigation) -->
+<div id="auth-backdrop"></div>
+<div id="auth-drawer" role="dialog" aria-modal="true" aria-label="Log in or sign up">
+  <button id="auth-drawer-close" type="button" aria-label="Close" style="position:absolute;top:18px;right:18px;width:36px;height:36px;border-radius:50%;border:none;background:#F3E9DC;cursor:pointer;display:flex;align-items:center;justify-content:center">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3A2E26" stroke-width="2.5" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+  </button>
+
+  <div style="padding:44px 32px 32px">
+    <div style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:22px;margin-bottom:24px">🐾 Pawgram</div>
+
+    <div style="display:flex;gap:8px;background:#F3E9DC;border-radius:999px;padding:4px;margin-bottom:28px">
+      <button id="auth-tab-login" type="button" class="btn" style="flex:1;padding:10px;font-size:14px">Log in</button>
+      <button id="auth-tab-signup" type="button" class="btn" style="flex:1;padding:10px;font-size:14px">Sign up</button>
+    </div>
+
+    <!-- LOGIN FORM -->
+    <form id="auth-login-form">
+      <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px">Username</label>
+      <input id="auth-login-username" type="text" autocomplete="username" required style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:16px;outline:none">
+      <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px">Password</label>
+      <input id="auth-login-password" type="password" autocomplete="current-password" required style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:20px;outline:none">
+      <button id="auth-login-submit" type="submit" class="btn" style="width:100%;background:#D9784F;color:#fff;padding:14px;font-size:16px">Log in</button>
+      <div id="auth-login-msg" style="font-size:14px;margin-top:14px;text-align:center"></div>
+    </form>
+
+    <!-- SIGNUP FORM -->
+    <form id="auth-signup-form" style="display:none">
+      <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px">Username</label>
+      <input id="auth-signup-username" type="text" autocomplete="username" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]+" title="Letters, numbers, and underscores only" required style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:6px;outline:none">
+      <div style="font-size:12px;color:#A6927C;margin-bottom:16px">This is what you'll use to log in.</div>
+      <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px">Display name</label>
+      <input id="auth-signup-display-name" type="text" autocomplete="nickname" minlength="1" maxlength="40" placeholder="e.g. Milo the Golden" required style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:16px;outline:none">
+      <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px">Password</label>
+      <input id="auth-signup-password" type="password" autocomplete="new-password" minlength="6" required style="width:100%;box-sizing:border-box;padding:12px 14px;border:2px solid #E3D6C6;border-radius:12px;font-size:15px;font-family:'Figtree',sans-serif;margin-bottom:20px;outline:none">
+      <button id="auth-signup-submit" type="submit" class="btn" style="width:100%;background:#D9784F;color:#fff;padding:14px;font-size:16px">Sign up</button>
+      <div id="auth-signup-msg" style="font-size:14px;margin-top:14px;text-align:center"></div>
+    </form>
+  </div>
+</div>
+
 <script>
 // --- Hero cover photo carousel ---
 // Starts on the main photo every time the page loads (no saved state), and
@@ -212,6 +265,137 @@ a:hover{color:#3A2E26}
       index = parseInt(dot.dataset.dot, 10);
       render();
     });
+  });
+})();
+
+// --- Auth drawer: Log in / Sign up slide in from the right, no page navigation ---
+(function () {
+  const drawer = document.getElementById('auth-drawer');
+  const backdrop = document.getElementById('auth-backdrop');
+  const heroCover = document.querySelector('.hero-cover');
+  const closeBtn = document.getElementById('auth-drawer-close');
+  const tabLogin = document.getElementById('auth-tab-login');
+  const tabSignup = document.getElementById('auth-tab-signup');
+  const loginForm = document.getElementById('auth-login-form');
+  const signupForm = document.getElementById('auth-signup-form');
+  if (!drawer || !backdrop) return;
+
+  function showTab(tab) {
+    const isLogin = tab === 'login';
+    loginForm.style.display = isLogin ? 'block' : 'none';
+    signupForm.style.display = isLogin ? 'none' : 'block';
+    tabLogin.classList.toggle('active', isLogin);
+    tabSignup.classList.toggle('active', !isLogin);
+  }
+
+  function openDrawer(tab) {
+    showTab(tab);
+    drawer.classList.add('is-open');
+    backdrop.classList.add('is-open');
+    if (heroCover) heroCover.classList.add('is-shrunk');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove('is-open');
+    backdrop.classList.remove('is-open');
+    if (heroCover) heroCover.classList.remove('is-shrunk');
+    document.body.style.overflow = '';
+  }
+
+  closeBtn.addEventListener('click', closeDrawer);
+  backdrop.addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
+  tabLogin.addEventListener('click', () => showTab('login'));
+  tabSignup.addEventListener('click', () => showTab('signup'));
+
+  // Any link that would have gone to login.html/signup.html opens the drawer instead.
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('a[href="login.html"], a[href="signup.html"]');
+    if (!link) return;
+    e.preventDefault();
+    openDrawer(link.getAttribute('href') === 'login.html' ? 'login' : 'signup');
+  });
+
+  loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('auth-login-username').value.trim();
+    const password = document.getElementById('auth-login-password').value;
+    const msg = document.getElementById('auth-login-msg');
+    const btn = document.getElementById('auth-login-submit');
+    msg.textContent = '';
+    msg.style.color = '';
+    btn.disabled = true;
+    btn.textContent = 'Logging in…';
+
+    const { error } = await supabaseClient.auth.signInWithPassword({
+      email: `${username}@pawgram-users.com`,
+      password
+    });
+
+    if (error) {
+      msg.textContent = 'Incorrect username or password.';
+      msg.style.color = '#C0392B';
+      btn.disabled = false;
+      btn.textContent = 'Log in';
+      return;
+    }
+
+    msg.textContent = 'Logged in! Redirecting…';
+    msg.style.color = '#2E7D32';
+    window.location.href = 'feed.html';
+  });
+
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('auth-signup-username').value.trim();
+    const displayName = document.getElementById('auth-signup-display-name').value.trim();
+    const password = document.getElementById('auth-signup-password').value;
+    const msg = document.getElementById('auth-signup-msg');
+    const btn = document.getElementById('auth-signup-submit');
+    msg.textContent = '';
+    msg.style.color = '';
+    btn.disabled = true;
+    btn.textContent = 'Creating your account…';
+
+    const { data: existing, error: lookupError } = await supabaseClient
+      .from('profiles')
+      .select('username')
+      .eq('username', username)
+      .maybeSingle();
+
+    if (lookupError) {
+      msg.textContent = 'Something went wrong checking that username. Try again.';
+      msg.style.color = '#C0392B';
+      btn.disabled = false;
+      btn.textContent = 'Sign up';
+      return;
+    }
+    if (existing) {
+      msg.textContent = 'That username is already taken.';
+      msg.style.color = '#C0392B';
+      btn.disabled = false;
+      btn.textContent = 'Sign up';
+      return;
+    }
+
+    const { error } = await supabaseClient.auth.signUp({
+      email: `${username}@pawgram-users.com`,
+      password,
+      options: { data: { username, display_name: displayName } }
+    });
+
+    if (error) {
+      msg.textContent = error.message;
+      msg.style.color = '#C0392B';
+      btn.disabled = false;
+      btn.textContent = 'Sign up';
+      return;
+    }
+
+    msg.textContent = 'Account created! Redirecting…';
+    msg.style.color = '#2E7D32';
+    window.location.href = 'feed.html';
   });
 })();
 
