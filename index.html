@@ -10,7 +10,10 @@
 <script src="config.js?v=1791515810"></script>
 <style>
 html{scroll-behavior:smooth}
+html,body{overflow-x:hidden;max-width:100%}
 body{margin:0;background:#FBF3E9;font-family:'Figtree',sans-serif;color:#3A2E26}
+*{-webkit-tap-highlight-color:transparent}
+input,button,textarea,select{font-size:16px}
 a{color:#D9784F;text-decoration:none}
 a:hover{color:#3A2E26}
 .btn{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-family:'Figtree',sans-serif;font-weight:600;cursor:pointer;border:none}
@@ -65,20 +68,41 @@ a:hover{color:#3A2E26}
 }
 
 @media (max-width: 700px) {
-  .nav-row { padding: 18px 20px !important; }
-  .hero-cover { margin: 0 20px 16px !important; }
-  .hero-cover-text { padding: 24px !important; }
-  .hero-heading { font-size: 32px !important; }
+  .nav-row { padding: 16px 20px !important; gap: 10px !important; }
+  .nav-row > div:last-child { gap: 12px !important; }
+  .nav-row a[href^="#"] { font-size: 14px !important; }
+  .hero-cover { margin: 0 16px 16px !important; max-height: 360px; }
+  #hero-cover-img { max-height: 360px !important; }
+  .hero-cover-text { padding: 22px 20px !important; }
+  .hero-heading { font-size: 30px !important; }
+  .hero-fade { font-size: 15px !important; }
   #hero-cover-prev, #hero-cover-next { width: 36px !important; height: 36px !important; }
   #hero-cover-prev { left: 10px !important; }
   #hero-cover-next { right: 10px !important; }
-  .features-row { padding: 16px 20px 40px !important; }
+  #hero-cover-dots { top: 14px !important; right: 16px !important; }
+  .features-row { padding: 16px 20px 40px !important; gap: 16px !important; }
   .feed-preview-row { padding: 12px 20px 48px !important; }
-  .footer-row { padding: 20px !important; }
+  .feed-preview-row h2, .playdates-row h2 { font-size: 22px !important; }
+  #fresh-pack-grid, #playdates-results { gap: 14px !important; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) !important; }
+  .playdates-row { padding: 12px 20px 56px !important; }
+  #playdates-form { flex-direction: column !important; gap: 10px !important; }
+  #playdates-city, #playdates-country { flex: 1 1 auto !important; width: 100% !important; font-size: 16px !important; }
+  #playdates-form button[type="submit"] { width: 100%; }
+  .footer-row { padding: 20px !important; text-align: center; justify-content: center !important; }
+  #auth-drawer > div { padding: 36px 22px 22px !important; }
+  #auth-login-username, #auth-login-password, #auth-signup-username, #auth-signup-display-name, #auth-signup-password { font-size: 16px !important; }
 }
 @media (max-width: 420px) {
-  .hero-heading { font-size: 26px !important; }
+  .nav-row { flex-direction: column; align-items: flex-start !important; }
+  .nav-row > div:last-child { width: 100%; justify-content: space-between !important; }
+  .hero-heading { font-size: 25px !important; }
   .hero-actions .btn { width: 100%; }
+  .hero-cover { max-height: 300px; }
+  #hero-cover-img { max-height: 300px !important; }
+  #hero-cover-prev, #hero-cover-next { width: 32px !important; height: 32px !important; }
+  #hero-cover-dots button { width: 7px !important; height: 7px !important; }
+  .features-row { grid-template-columns: 1fr !important; }
+  #fresh-pack-grid, #playdates-results { grid-template-columns: 1fr !important; }
 }
 </style>
 
