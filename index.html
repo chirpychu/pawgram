@@ -56,6 +56,9 @@ a:hover{color:#3A2E26}
   .hero-cover { margin: 0 20px 16px !important; }
   .hero-cover-text { padding: 24px !important; }
   .hero-heading { font-size: 32px !important; }
+  #hero-cover-prev, #hero-cover-next { width: 36px !important; height: 36px !important; }
+  #hero-cover-prev { left: 10px !important; }
+  #hero-cover-next { right: 10px !important; }
   .features-row { padding: 16px 20px 40px !important; }
   .feed-preview-row { padding: 12px 20px 48px !important; }
   .footer-row { padding: 20px !important; }
@@ -86,9 +89,17 @@ a:hover{color:#3A2E26}
 
   <!-- HERO / COVER -->
   <div class="hero-cover" style="position:relative;margin:0 48px 20px;border-radius:28px;overflow:hidden;box-shadow:0 18px 40px rgba(58,46,38,.14)">
-    <img src="assets/images/hero-pets.jpg" alt="A golden retriever and a cat cuddled together on a couch" loading="eager" style="width:100%;height:100%;max-height:560px;object-fit:cover;display:block">
+    <img id="hero-cover-img" src="assets/images/cover-1.jpg" alt="A golden retriever and a cat cuddled together on a couch" loading="eager" style="width:100%;height:100%;max-height:560px;object-fit:cover;display:block;transition:opacity .35s ease">
     <div style="position:absolute;inset:0;background:linear-gradient(0deg,rgba(40,28,20,.72) 0%,rgba(40,28,20,.38) 38%,rgba(40,28,20,0) 65%)"></div>
     <div style="position:absolute;top:18px;left:22px;font-family:'Fredoka',sans-serif;font-weight:600;font-size:13px;color:#3A2E26;background:#fff;padding:7px 15px;border-radius:999px;box-shadow:0 6px 18px rgba(0,0,0,.12)">📸 Real pets, real moments</div>
+
+    <button id="hero-cover-prev" type="button" aria-label="Previous photo" style="position:absolute;top:50%;left:16px;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.85);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A2E26" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <button id="hero-cover-next" type="button" aria-label="Next photo" style="position:absolute;top:50%;right:16px;transform:translateY(-50%);width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.85);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.18);z-index:2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3A2E26" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <div id="hero-cover-dots" style="position:absolute;top:22px;right:22px;display:flex;gap:8px;z-index:2"></div>
     <div class="hero-cover-text" style="position:absolute;left:0;right:0;bottom:0;padding:40px">
       <h1 class="hero-heading" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:52px;line-height:1.05;margin:0 0 16px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.25)"><span class="word" style="animation-delay:.15s">Where</span> <span class="word" style="animation-delay:.3s">pet</span> <span class="word" style="animation-delay:.45s">lovers</span> <span class="word" style="animation-delay:.6s">connect.</span></h1>
       <p class="hero-fade" style="animation-delay:.9s;font-size:18px;line-height:1.6;color:#F6EEE4;margin:0 0 28px;max-width:480px">Share your pet's best moments, meet other owners nearby, and set up playdates — all in one friendly place.</p>
@@ -155,6 +166,55 @@ a:hover{color:#3A2E26}
 </div>
 
 <script>
+// --- Hero cover photo carousel ---
+// Starts on the main photo every time the page loads (no saved state), and
+// lets the person click through the other shared pet photos with the arrows.
+(function () {
+  const photos = [
+    { src: 'assets/images/cover-1.jpg', alt: "A golden retriever and a cat cuddled together on a couch" },
+    { src: 'assets/images/cover-2.jpg', alt: "A puppy and a cat cuddled together on a couch" },
+    { src: 'assets/images/cover-3.jpg', alt: "A golden retriever jumping to catch a ball" },
+    { src: 'assets/images/cover-4.jpg', alt: "A corgi playing with a tennis ball in the grass" }
+  ];
+  let index = 0;
+
+  const img = document.getElementById('hero-cover-img');
+  const dotsWrap = document.getElementById('hero-cover-dots');
+  const prevBtn = document.getElementById('hero-cover-prev');
+  const nextBtn = document.getElementById('hero-cover-next');
+  if (!img || !dotsWrap || !prevBtn || !nextBtn) return;
+
+  dotsWrap.innerHTML = photos.map((_, i) =>
+    `<button type="button" aria-label="Show photo ${i + 1}" data-dot="${i}" style="width:8px;height:8px;border-radius:50%;border:none;padding:0;cursor:pointer;background:rgba(255,255,255,${i === 0 ? '1' : '.5'})"></button>`
+  ).join('');
+
+  function render() {
+    img.style.opacity = '0';
+    setTimeout(() => {
+      img.src = photos[index].src;
+      img.alt = photos[index].alt;
+      img.style.opacity = '1';
+    }, 180);
+    dotsWrap.querySelectorAll('[data-dot]').forEach((dot, i) => {
+      dot.style.background = i === index ? 'rgba(255,255,255,1)' : 'rgba(255,255,255,.5)';
+    });
+  }
+
+  function go(delta) {
+    index = (index + delta + photos.length) % photos.length;
+    render();
+  }
+
+  prevBtn.addEventListener('click', () => go(-1));
+  nextBtn.addEventListener('click', () => go(1));
+  dotsWrap.querySelectorAll('[data-dot]').forEach((dot) => {
+    dot.addEventListener('click', () => {
+      index = parseInt(dot.dataset.dot, 10);
+      render();
+    });
+  });
+})();
+
 // --- Scroll-triggered entrance + exit animations ---
 // Each section fades/slides in the first time it enters the viewport, and
 // fades/slides back out once scrolled past (either direction) — so it
