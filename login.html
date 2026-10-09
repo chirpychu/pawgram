@@ -57,7 +57,7 @@ button:disabled{opacity:.6;cursor:default}
 </div>
 
 <div class="card">
-  <a href="index.html" class="logo">🐾 Pawgram</a>
+  <a href="." class="logo">🐾 Pawgram</a>
   <h1>Welcome back</h1>
 
   <form id="login-form">
@@ -71,7 +71,7 @@ button:disabled{opacity:.6;cursor:default}
     <div id="msg" class="msg"></div>
   </form>
 
-  <div class="foot">New to Pawgram? <a href="signup.html">Sign up</a></div>
+  <div class="foot">New to Pawgram? <a href="signup">Sign up</a></div>
 </div>
 
 <script>
@@ -110,7 +110,7 @@ form.addEventListener('submit', async (e) => {
   }
 
   showMessage('Welcome back! Redirecting…', 'success');
-  setTimeout(() => { window.location.href = 'feed.html'; }, 800);
+  setTimeout(() => { window.location.href = 'feed'; }, 800);
 });
 </script>
 

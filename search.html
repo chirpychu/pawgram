@@ -58,7 +58,7 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
   <!-- LEFT SIDEBAR -->
   <div id="left-sidebar" style="width:230px;flex:0 0 230px;padding:28px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid #EAE0D2">
     <div class="logo" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:24px;padding:8px 16px 24px;color:#3A2E26">Pawgram</div>
-    <a href="feed.html" class="navitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg><span class="nav-label">Home</span></a>
+    <a href="feed" class="navitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg><span class="nav-label">Home</span></a>
     <div id="explore-wrap" style="position:relative">
       <a href="#" id="explore-toggle" class="navitem active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nav-label">Explore</span></a>
       <div id="explore-dropdown">
@@ -124,7 +124,7 @@ function renderPeople(people, box) {
     return;
   }
   box.innerHTML = people.map(p => `
-    <a href="profile.html?u=${encodeURIComponent(p.username)}" class="card plain" style="padding:14px 20px;display:flex;align-items:center;gap:14px">
+    <a href="profile?u=${encodeURIComponent(p.username)}" class="card plain" style="padding:14px 20px;display:flex;align-items:center;gap:14px">
       <div style="width:44px;height:44px;border-radius:50%;background:#6B9080;flex:0 0 44px"></div>
       <div>
         <div style="font-weight:600;color:#3A2E26">${escapeHtml(p.display_name || p.username)}</div>
@@ -150,7 +150,7 @@ function renderPosts(posts, box) {
         <div style="display:flex;align-items:center;gap:12px;padding:16px 20px">
           <div style="width:38px;height:38px;border-radius:50%;background:#D9784F;flex:0 0 38px"></div>
           <div>
-            <a href="profile.html?u=${encodeURIComponent(uname)}" style="font-weight:600;font-size:14px;color:#3A2E26">${escapeHtml(name)}</a>
+            <a href="profile?u=${encodeURIComponent(uname)}" style="font-weight:600;font-size:14px;color:#3A2E26">${escapeHtml(name)}</a>
             <div style="font-size:12px;color:#A6927C">${timeAgo(p.created_at)}</div>
           </div>
         </div>
@@ -218,7 +218,7 @@ async function init() {
   me = await getMyProfile(session);
   if (!me) return;
 
-  document.getElementById('profile-link').href = 'profile.html?u=' + encodeURIComponent(me.username);
+  document.getElementById('profile-link').href = 'profile?u=' + encodeURIComponent(me.username);
   document.getElementById('logout-link').addEventListener('click', (e) => {
     e.preventDefault();
     logout();

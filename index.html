@@ -121,8 +121,8 @@ a:hover{color:#3A2E26}
     <div style="display:flex;align-items:center;gap:28px;flex-wrap:wrap">
       <a href="#playdates-section" style="font-weight:500">Playdates</a>
       <a href="#about-section" style="font-weight:500">About</a>
-      <a href="login.html" class="btn" style="background:transparent;color:#3A2E26;border:2px solid #3A2E26;padding:10px 22px;font-size:15px;text-decoration:none">Log in</a>
-      <a href="signup.html" class="btn" style="background:#D9784F;color:#fff;padding:12px 26px;font-size:15px;text-decoration:none">Sign up</a>
+      <a href="login" class="btn" style="background:transparent;color:#3A2E26;border:2px solid #3A2E26;padding:10px 22px;font-size:15px;text-decoration:none">Log in</a>
+      <a href="signup" class="btn" style="background:#D9784F;color:#fff;padding:12px 26px;font-size:15px;text-decoration:none">Sign up</a>
     </div>
   </div>
 
@@ -145,7 +145,7 @@ a:hover{color:#3A2E26}
       <h1 class="hero-heading" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:52px;line-height:1.05;margin:0 0 16px;color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.25)"><span class="word" style="animation-delay:.15s">Where</span> <span class="word" style="animation-delay:.3s">pet</span> <span class="word" style="animation-delay:.45s">lovers</span> <span class="word" style="animation-delay:.6s">connect.</span></h1>
       <p class="hero-fade hero-subtitle" style="animation-delay:.9s;font-size:18px;line-height:1.6;color:#F6EEE4;margin:0 0 28px;max-width:480px">Share your pet's best moments, meet other owners nearby, and set up playdates — all in one friendly place.</p>
       <div class="hero-actions hero-fade" style="animation-delay:1.1s;display:flex;gap:16px;flex-wrap:wrap">
-        <a href="signup.html" class="btn" style="background:#D9784F;color:#fff;padding:16px 32px;font-size:17px;text-decoration:none">Create your pet's profile</a>
+        <a href="signup" class="btn" style="background:#D9784F;color:#fff;padding:16px 32px;font-size:17px;text-decoration:none">Create your pet's profile</a>
         <button class="btn" style="background:rgba(255,255,255,.92);color:#3A2E26;border:none;padding:16px 28px;font-size:17px">See how it works</button>
       </div>
     </div>
@@ -339,10 +339,10 @@ a:hover{color:#3A2E26}
 
   // Any link that would have gone to login.html/signup.html opens the drawer instead.
   document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href="login.html"], a[href="signup.html"]');
+    const link = e.target.closest('a[href="login"], a[href="signup"]');
     if (!link) return;
     e.preventDefault();
-    openDrawer(link.getAttribute('href') === 'login.html' ? 'login' : 'signup');
+    openDrawer(link.getAttribute('href') === 'login' ? 'login' : 'signup');
   });
 
   loginForm.addEventListener('submit', async (e) => {
@@ -371,7 +371,7 @@ a:hover{color:#3A2E26}
 
     msg.textContent = 'Logged in! Redirecting…';
     msg.style.color = '#2E7D32';
-    window.location.href = 'feed.html';
+    window.location.href = 'feed';
   });
 
   signupForm.addEventListener('submit', async (e) => {
@@ -423,7 +423,7 @@ a:hover{color:#3A2E26}
 
     msg.textContent = 'Account created! Redirecting…';
     msg.style.color = '#2E7D32';
-    window.location.href = 'feed.html';
+    window.location.href = 'feed';
   });
 })();
 
@@ -464,7 +464,7 @@ function ctaTile() {
   return `<div style="background:#D9784F;border-radius:16px;height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:16px;box-sizing:border-box">
     <div style="font-size:30px;margin-bottom:8px">🐾</div>
     <div style="font-family:'Fredoka',sans-serif;font-weight:600;font-size:16px;margin-bottom:12px">Add your pet to the pack</div>
-    <a href="signup.html" class="btn" style="background:#fff;color:#D9784F;padding:10px 20px;font-size:14px;text-decoration:none">Join free</a>
+    <a href="signup" class="btn" style="background:#fff;color:#D9784F;padding:10px 20px;font-size:14px;text-decoration:none">Join free</a>
   </div>`;
 }
 
@@ -472,7 +472,7 @@ function postTile(p) {
   const images = (p.post_images || []).slice().sort((a, b) => a.position - b.position);
   const url = getPostImageUrl(images[0].storage_path);
   const name = p.author?.display_name || p.author?.username || 'A Pawgram pet';
-  const profileUrl = p.author?.username ? `profile.html?u=${encodeURIComponent(p.author.username)}` : '#';
+  const profileUrl = p.author?.username ? `profile?u=${encodeURIComponent(p.author.username)}` : '#';
   return `<a href="${profileUrl}" style="position:relative;display:block;background:#EFE3D2;border-radius:16px;height:200px;overflow:hidden;text-decoration:none">
     <img src="${escapeHtml(url)}" alt="A pet shared by ${escapeHtml(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block">
     <div style="position:absolute;left:0;right:0;bottom:0;padding:10px 12px;background:linear-gradient(0deg,rgba(40,28,20,.65),transparent);color:#fff;font-size:13px;font-weight:600;font-family:'Figtree',sans-serif">${escapeHtml(name)}</div>
@@ -498,7 +498,7 @@ async function loadFreshFromThePack() {
         <div style="grid-column:1/-1;background:#fff;border-radius:16px;padding:40px 24px;text-align:center;color:#6B5E54">
           <div style="font-size:32px;margin-bottom:10px">🐾</div>
           <p style="margin:0 0 18px;font-size:15px">No public posts yet — be the first to share your pet's moment!</p>
-          <a href="signup.html" class="btn" style="background:#D9784F;color:#fff;padding:12px 26px;font-size:15px;text-decoration:none">Join free</a>
+          <a href="signup" class="btn" style="background:#D9784F;color:#fff;padding:12px 26px;font-size:15px;text-decoration:none">Join free</a>
         </div>`;
       return;
     }

@@ -67,7 +67,7 @@ a.navitem,a.plain{color:#3A2E26;text-decoration:none}
   <!-- LEFT SIDEBAR -->
   <div id="left-sidebar" style="width:230px;flex:0 0 230px;padding:28px 16px;display:flex;flex-direction:column;gap:6px;border-right:1px solid #EAE0D2">
     <div class="logo" style="font-family:'Fredoka',sans-serif;font-weight:700;font-size:24px;padding:8px 16px 24px;color:#3A2E26">Pawgram</div>
-    <a href="feed.html" class="navitem active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg><span class="nav-label">Home</span></a>
+    <a href="feed" class="navitem active"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-7 9 7"/><path d="M5 10v9h14v-9"/></svg><span class="nav-label">Home</span></a>
     <div id="explore-wrap" style="position:relative">
       <a href="#" id="explore-toggle" class="navitem"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg><span class="nav-label">Explore</span></a>
       <div id="explore-dropdown">
@@ -214,7 +214,7 @@ function renderPost(p) {
       <div style="display:flex;align-items:center;gap:12px;padding:18px 22px">
         <div style="width:42px;height:42px;border-radius:50%;background:#D9784F;flex:0 0 42px"></div>
         <div>
-          <a href="profile.html?u=${encodeURIComponent(uname)}" style="font-weight:600;font-size:15px;color:#3A2E26">${escapeHtml(name)}</a>
+          <a href="profile?u=${encodeURIComponent(uname)}" style="font-weight:600;font-size:15px;color:#3A2E26">${escapeHtml(name)}</a>
           <div style="font-size:13px;color:#A6927C">${meta}</div>
         </div>
         ${deleteBtnHtml}
@@ -251,7 +251,7 @@ async function loadSuggestions() {
   box.innerHTML = suggestions.map(p => `
     <div style="display:flex;align-items:center;gap:12px">
       <div style="width:36px;height:36px;border-radius:50%;background:#6B9080;flex:0 0 36px"></div>
-      <a href="profile.html?u=${encodeURIComponent(p.username)}" style="flex:1;font-size:14px;font-weight:500;color:#3A2E26">${escapeHtml(p.display_name || p.username)}</a>
+      <a href="profile?u=${encodeURIComponent(p.username)}" style="flex:1;font-size:14px;font-weight:500;color:#3A2E26">${escapeHtml(p.display_name || p.username)}</a>
       <button class="btn follow-btn" data-id="${p.id}" style="background:#FBF3E9;color:#D9784F;padding:6px 14px;font-size:13px">Follow</button>
     </div>`).join('');
 
@@ -350,8 +350,8 @@ async function init() {
   if (!me) return;
 
   document.getElementById('my-name').textContent = me.display_name || me.username;
-  document.getElementById('my-profile-card').href = 'profile.html?u=' + encodeURIComponent(me.username);
-  document.getElementById('profile-link').href = 'profile.html?u=' + encodeURIComponent(me.username);
+  document.getElementById('my-profile-card').href = 'profile?u=' + encodeURIComponent(me.username);
+  document.getElementById('profile-link').href = 'profile?u=' + encodeURIComponent(me.username);
   document.getElementById('composer-input').placeholder = `What's on your mind, ${me.username}?`;
   initExploreDropdown();
 
