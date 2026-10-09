@@ -155,7 +155,10 @@ a:hover{color:#3A2E26}
 </div>
 
 <script>
-// --- Scroll-triggered entrance animations ---
+// --- Scroll-triggered entrance + exit animations ---
+// Each section fades/slides in the first time it enters the viewport, and
+// fades/slides back out once scrolled past (either direction) — so it
+// re-plays the entrance again if the user scrolls back down to it.
 (function () {
   var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var revealEls = document.querySelectorAll('.reveal, .reveal-stagger');
@@ -167,12 +170,9 @@ a:hover{color:#3A2E26}
 
   var observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      }
+      entry.target.classList.toggle('is-visible', entry.isIntersecting);
     });
-  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  }, { threshold: 0.15, rootMargin: '0px 0px -10% 0px' });
 
   revealEls.forEach(function (el) { observer.observe(el); });
 })();
