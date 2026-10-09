@@ -138,10 +138,7 @@ a:hover{color:#3A2E26}
     </form>
 
     <div id="playdates-results" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
-      <div style="grid-column:1/-1;background:#fff;border-radius:16px;padding:32px 24px;text-align:center;color:#6B5E54">
-        <div style="font-size:30px;margin-bottom:8px">🌍</div>
-        <p style="margin:0;font-size:15px">Enter a city (and optionally a country code) above to find pet events near there.</p>
-      </div>
+      <div style="grid-column:1/-1;text-align:center;padding:30px;color:#A6927C;font-size:14px">Loading events…</div>
     </div>
   </div>
 
@@ -267,7 +264,7 @@ function eventCard(ev) {
   </a>`;
 }
 
-async function searchPlaydates(city, countryCode) {
+async function searchPlaydates(city, countryCode, size = 12) {
   const results = document.getElementById('playdates-results');
 
   if (!TICKETMASTER_API_KEY || TICKETMASTER_API_KEY === 'YOUR_TICKETMASTER_API_KEY') {
@@ -277,13 +274,13 @@ async function searchPlaydates(city, countryCode) {
     return;
   }
 
-  results.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#A6927C;font-size:14px">Searching for events…</div>`;
+  results.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:30px;color:#A6927C;font-size:14px">${city || countryCode ? 'Searching for events…' : 'Loading events…'}</div>`;
 
   try {
     const params = new URLSearchParams({
       apikey: TICKETMASTER_API_KEY,
       keyword: 'pet',
-      size: '12',
+      size: String(size),
       sort: 'date,asc'
     });
     if (city) params.set('city', city);
@@ -297,7 +294,7 @@ async function searchPlaydates(city, countryCode) {
     if (events.length === 0) {
       results.innerHTML = `<div style="grid-column:1/-1;background:#fff;border-radius:16px;padding:32px 24px;text-align:center;color:#6B5E54">
         <div style="font-size:30px;margin-bottom:8px">🐾</div>
-        <p style="margin:0;font-size:15px">No pet events found there right now — try a nearby city or a different country code.</p>
+        <p style="margin:0;font-size:15px">${city || countryCode ? 'No pet events found there right now — try a nearby city or a different country code.' : 'No pet events to show right now — check back soon.'}</p>
       </div>`;
       return;
     }
@@ -308,6 +305,9 @@ async function searchPlaydates(city, countryCode) {
     console.error('Could not load playdate events:', err.message);
   }
 }
+
+// Show 4 events by default on load; a search replaces these with the user's results.
+searchPlaydates('', '', 4);
 
 document.getElementById('playdates-form').addEventListener('submit', (e) => {
   e.preventDefault();
