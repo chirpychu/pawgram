@@ -34,7 +34,7 @@ export function LoginForm({ onSuccess }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="auth-form" onSubmit={handleSubmit}>
       <label htmlFor="login-username">Username</label>
       <input
         id="login-username"
@@ -112,7 +112,7 @@ export function SignupForm({ onSuccess }) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form className="auth-form" onSubmit={handleSubmit}>
       <label htmlFor="signup-username">Username</label>
       <input
         id="signup-username"

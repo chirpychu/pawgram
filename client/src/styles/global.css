@@ -150,17 +150,24 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
   color: var(--ink);
 }
 .auth-card h1 { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; text-align: center; margin: 0 0 28px; color: var(--ink); }
-.auth-card label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
-.auth-card input {
+
+/* Shared by both the full-page login/signup cards AND the slide-in drawer
+   (which renders the same <LoginForm>/<SignupForm> without the .auth-card
+   wrapper) — scoping this to .auth-card alone left the drawer's inputs
+   and labels completely unstyled. */
+.auth-form label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--ink); }
+.auth-form input {
+  display: block;
   width: 100%;
   padding: 12px 14px;
   border: 2px solid var(--border);
   border-radius: 12px;
   margin-bottom: 18px;
   outline: none;
+  box-sizing: border-box;
 }
-.auth-card input:focus { border-color: var(--orange); }
-.auth-card .submit-btn { width: 100%; background: var(--orange); color: #fff; padding: 14px; font-size: 16px; }
+.auth-form input:focus { border-color: var(--orange); }
+.auth-form .submit-btn { width: 100%; background: var(--orange); color: #fff; padding: 14px; font-size: 16px; }
 .msg { font-size: 14px; margin-top: 14px; text-align: center; }
 .msg.error { color: var(--error); }
 .msg.success { color: var(--success); }
