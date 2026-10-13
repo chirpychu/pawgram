@@ -38,8 +38,12 @@ export default function NotificationBell({ me }) {
     function onDocClick(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
     }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
+    // mousedown, not click: accepting/rejecting a request removes that
+    // notification's row before the click event finishes bubbling to
+    // document, which would make `contains()` see a detached node and
+    // misfire as an outside click. mousedown fires before that happens.
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
   }, [])
 
   async function toggleOpen() {

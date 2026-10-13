@@ -6,6 +6,7 @@ import { supabase } from '../services/supabaseClient'
 import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
+import MessageBubble from '../components/MessageBubble.jsx'
 import FollowListModal from '../components/FollowListModal.jsx'
 
 function ProfileHeader({ profile, isMe, postCount, followerCount, followingCount, followState, showCounts, onToggleFollow, onSaved, onOpenFollowers, onOpenFollowing }) {
@@ -217,6 +218,7 @@ export default function Profile() {
   return (
     <div className="app-shell" style={{ display: 'flex', maxWidth: 1320, margin: '0 auto', minHeight: '100vh' }}>
       <NotificationBell me={me} />
+      <MessageBubble me={me} />
       <AppSidebar active="profile" me={me} />
 
       <div className="main-col" style={{ flex: '1 1 auto', minWidth: 0, padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>

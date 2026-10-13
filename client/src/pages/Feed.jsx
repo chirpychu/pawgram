@@ -7,6 +7,7 @@ import { compressImage } from '../utils/image'
 import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
+import MessageBubble from '../components/MessageBubble.jsx'
 
 function Composer({ me, onPosted }) {
   const [caption, setCaption] = useState('')
@@ -242,6 +243,7 @@ export default function Feed() {
   return (
     <div className="app-shell" style={{ display: 'flex', maxWidth: 1320, margin: '0 auto', minHeight: '100vh' }}>
       <NotificationBell me={me} />
+      <MessageBubble me={me} />
       <AppSidebar
         active="home"
         me={me}

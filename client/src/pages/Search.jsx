@@ -7,6 +7,7 @@ import { escapeLikePattern } from '../utils/search'
 import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
+import MessageBubble from '../components/MessageBubble.jsx'
 
 function PersonRow({ p }) {
   return (
@@ -85,6 +86,7 @@ export default function Search() {
   return (
     <div className="app-shell" style={{ display: 'flex', maxWidth: 1320, margin: '0 auto', minHeight: '100vh' }}>
       <NotificationBell me={me} />
+      <MessageBubble me={me} />
       <AppSidebar active="explore" me={me} />
 
       <div className="main-col" style={{ flex: '1 1 auto', minWidth: 0, padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>

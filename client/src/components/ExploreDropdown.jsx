@@ -30,8 +30,9 @@ export default function ExploreDropdown({ active }) {
     function onDocClick(e) {
       if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
     }
-    document.addEventListener('click', onDocClick)
-    return () => document.removeEventListener('click', onDocClick)
+    // mousedown rather than click — see MessageBubble/NotificationBell for why.
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
   }, [])
 
   function handleSubmit(e) {

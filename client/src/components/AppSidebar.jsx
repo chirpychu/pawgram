@@ -21,15 +21,6 @@ export default function AppSidebar({ active, me, extra }) {
 
       <ExploreDropdown active={active === 'explore'} />
 
-      <div className="navitem disabled">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-4.6-9.5-9A5.5 5.5 0 0112 5.5 5.5 5.5 0 0121.5 12c-2.5 4.4-9.5 9-9.5 9z" /></svg>
-        <span className="nav-label">Playdates</span>
-      </div>
-      <div className="navitem disabled">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
-        <span className="nav-label">Messages</span>
-      </div>
-
       <Link to={me ? `/profile?u=${encodeURIComponent(me.username)}` : '#'} className={`navitem ${active === 'profile' ? 'active' : ''}`}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" /></svg>
         <span className="nav-label">Profile</span>
