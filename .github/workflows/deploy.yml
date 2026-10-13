@@ -1,0 +1,60 @@
+name: Deploy Pawgram to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: client
+        run: npm ci
+
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+      # GitHub Pages serves static files only — it has no idea /feed or
+      # /profile?u=... are React Router routes, not real files, so a
+      # direct visit or refresh on one 404s. The standard SPA-on-Pages fix
+      # is to also serve index.html for any unmatched path: Pages falls
+      # back to 404.html when a path doesn't exist, so making that file a
+      # copy of index.html hands control back to the router client-side.
+      - name: Add SPA fallback (404.html)
+        run: cp client/dist/index.html client/dist/404.html
+
+      - name: Upload build
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
