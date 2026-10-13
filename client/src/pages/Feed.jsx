@@ -244,19 +244,7 @@ export default function Feed() {
     <div className="app-shell" style={{ display: 'flex', maxWidth: 1320, margin: '0 auto', minHeight: '100vh' }}>
       <NotificationBell me={me} />
       <MessageBubble me={me} />
-      <AppSidebar
-        active="home"
-        me={me}
-        extra={
-          <button
-            className="btn sidebar-new-post"
-            style={{ marginTop: 20, background: '#D9784F', color: '#fff', padding: 14, fontSize: 15 }}
-            onClick={() => document.getElementById('composer-input')?.focus()}
-          >
-            <span className="nav-label">+ New post</span>
-          </button>
-        }
-      />
+      <AppSidebar active="home" me={me} />
 
       <div className="center-col" style={{ flex: '1 1 auto', minWidth: 0, padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Composer me={me} onPosted={loadFeed} />

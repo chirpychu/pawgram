@@ -6,8 +6,7 @@ import SettingsMenu from './SettingsMenu.jsx'
  * Left nav shared by Feed, Profile and Search. `active` is one of
  * 'home' | 'explore' | 'profile'. `me` (the signed-in user's profile row)
  * is used to build the "View profile" link and for the settings menu's
- * account-privacy toggle; `extra` renders page-specific extra items
- * (Feed's "+ New post" button).
+ * account-privacy toggle; `extra` renders any page-specific extra items.
  */
 export default function AppSidebar({ active, me, extra }) {
   return (
