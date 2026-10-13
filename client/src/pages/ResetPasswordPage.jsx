@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import AuthScreen from '../components/AuthScreen.jsx'
+import PasswordInput from '../components/PasswordInput.jsx'
 import { supabase } from '../services/supabaseClient'
 
 /**
@@ -90,9 +91,8 @@ export default function ResetPasswordPage() {
             </div>
           )}
           <label htmlFor="reset-password">New password</label>
-          <input
+          <PasswordInput
             id="reset-password"
-            type="password"
             autoComplete="new-password"
             minLength={6}
             required
@@ -100,9 +100,8 @@ export default function ResetPasswordPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
           <label htmlFor="reset-password-confirm">Confirm new password</label>
-          <input
+          <PasswordInput
             id="reset-password-confirm"
-            type="password"
             autoComplete="new-password"
             minLength={6}
             required

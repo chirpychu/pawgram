@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
+import PasswordInput from './PasswordInput.jsx'
 
 /** Login form. Calls onSuccess() right before navigating to /feed. */
 export function LoginForm({ onSuccess }) {
@@ -55,9 +56,8 @@ export function LoginForm({ onSuccess }) {
         onChange={(e) => setUsername(e.target.value)}
       />
       <label htmlFor="login-password">Password</label>
-      <input
+      <PasswordInput
         id="login-password"
-        type="password"
         autoComplete="current-password"
         required
         value={password}
@@ -175,9 +175,8 @@ export function SignupForm({ onSuccess }) {
       </div>
 
       <label htmlFor="signup-password">Password</label>
-      <input
+      <PasswordInput
         id="signup-password"
-        type="password"
         autoComplete="new-password"
         minLength={6}
         required
