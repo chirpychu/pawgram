@@ -1,16 +1,15 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import ExploreDropdown from './ExploreDropdown.jsx'
-import { logout } from '../hooks/useAuth.js'
+import SettingsMenu from './SettingsMenu.jsx'
 
 /**
  * Left nav shared by Feed, Profile and Search. `active` is one of
  * 'home' | 'explore' | 'profile'. `me` (the signed-in user's profile row)
- * is used to build the "View profile" link; `extra` renders page-specific
- * extra items (Feed's "+ New post" button).
+ * is used to build the "View profile" link and for the settings menu's
+ * account-privacy toggle; `extra` renders page-specific extra items
+ * (Feed's "+ New post" button).
  */
 export default function AppSidebar({ active, me, extra }) {
-  const navigate = useNavigate()
-
   return (
     <div className="left-sidebar" style={{ width: 230, flex: '0 0 230px', padding: '28px 16px', display: 'flex', flexDirection: 'column', gap: 6, borderRight: '1px solid #EAE0D2' }}>
       <div className="logo" style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 24, padding: '8px 16px 24px', color: '#3A2E26' }}>Pawgram</div>
@@ -38,14 +37,7 @@ export default function AppSidebar({ active, me, extra }) {
 
       {extra}
 
-      <a
-        href="#"
-        className="plain logout-link"
-        style={{ marginTop: 'auto', padding: '12px 16px', fontSize: 13, color: '#A6927C' }}
-        onClick={(e) => { e.preventDefault(); logout(navigate) }}
-      >
-        <span className="nav-label">Log out</span>
-      </a>
+      <SettingsMenu me={me} />
     </div>
   )
 }
