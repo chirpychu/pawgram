@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import SettingsMenu from './SettingsMenu.jsx'
+import WeatherWidget from './WeatherWidget.jsx'
 
 /**
  * Left nav shared by Feed, Profile and Search. `active` is one of
@@ -28,6 +29,8 @@ export default function AppSidebar({ active, me, extra }) {
       </Link>
 
       {extra}
+
+      <WeatherWidget />
 
       <SettingsMenu me={me} />
     </div>
