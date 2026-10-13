@@ -3,7 +3,7 @@ import { supabase } from '../services/supabaseClient'
 import { timeAgo } from '../utils/timeAgo'
 import ReactionBar from './ReactionBar.jsx'
 
-function Comment({ comment, childrenByParent, me, onReply, depth = 0 }) {
+function Comment({ comment, childrenByParent, me, onReply, postId, depth = 0 }) {
   const [replying, setReplying] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [showReplies, setShowReplies] = useState(depth > 0)
@@ -30,7 +30,7 @@ function Comment({ comment, childrenByParent, me, onReply, depth = 0 }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginTop: 4, fontSize: 12, color: '#A6927C', flexWrap: 'wrap' }}>
             <span>{timeAgo(comment.created_at)}</span>
-            <ReactionBar table="comment_reactions" idColumn="comment_id" targetId={comment.id} me={me} size="small" />
+            <ReactionBar table="comment_reactions" idColumn="comment_id" targetId={comment.id} ownerId={comment.user_id} postId={postId} me={me} size="small" />
             <button onClick={() => setReplying((r) => !r)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#A6927C', fontSize: 12, padding: 0 }}>
               Reply
             </button>
@@ -62,7 +62,7 @@ function Comment({ comment, childrenByParent, me, onReply, depth = 0 }) {
           )}
 
           {showReplies && replies.map((r) => (
-            <Comment key={r.id} comment={r} childrenByParent={childrenByParent} me={me} onReply={onReply} depth={depth + 1} />
+            <Comment key={r.id} comment={r} childrenByParent={childrenByParent} me={me} onReply={onReply} postId={postId} depth={depth + 1} />
           ))}
         </div>
       </div>
@@ -129,7 +129,7 @@ export default function CommentThread({ postId, me, onCountChange }) {
     <div style={{ padding: '4px 22px 18px' }}>
       {topLevel.length === 0 && <div style={{ fontSize: 13, color: '#A6927C', padding: '8px 0' }}>No comments yet — be the first to say something.</div>}
       {topLevel.map((c) => (
-        <Comment key={c.id} comment={c} childrenByParent={childrenByParent} me={me} onReply={addComment} />
+        <Comment key={c.id} comment={c} childrenByParent={childrenByParent} me={me} onReply={addComment} postId={postId} />
       ))}
 
       <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

@@ -83,7 +83,7 @@ export default function PostCard({ post, me, showAuthor = true, onDelete, imageM
       {me && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '4px 14px 10px', borderTop: '1px solid #EFE3D2' }}>
-            <ReactionBar table="likes" idColumn="post_id" targetId={post.id} me={me} />
+            <ReactionBar table="likes" idColumn="post_id" targetId={post.id} ownerId={post.author_id} postId={post.id} me={me} />
             <button
               onClick={() => setCommentsOpen((o) => !o)}
               className="btn"

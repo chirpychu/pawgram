@@ -22,7 +22,7 @@ export default function NotificationBell({ me }) {
     if (!me) return
     const { data, error } = await supabase
       .from('notifications')
-      .select('id, type, read, created_at, actor_id, actor:profiles!notifications_actor_id_fkey(username, display_name)')
+      .select('id, type, read, created_at, actor_id, reaction, post_id, comment_id, actor:profiles!notifications_actor_id_fkey(username, display_name)')
       .eq('recipient_id', me.id)
       .order('created_at', { ascending: false })
       .limit(30)
@@ -165,7 +165,10 @@ export default function NotificationBell({ me }) {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: '#3A2E26' }}>
                     <Link to={`/profile?u=${encodeURIComponent(n.actor?.username || '')}`} style={{ fontWeight: 600, color: '#3A2E26' }}>{name}</Link>{' '}
-                    {n.type === 'follow_request' ? 'requested to follow you' : 'accepted your follow request'}
+                    {n.type === 'follow_request' && 'requested to follow you'}
+                    {n.type === 'follow_accepted' && 'accepted your follow request'}
+                    {n.type === 'post_reaction' && <>reacted {n.reaction} to your post</>}
+                    {n.type === 'comment_reaction' && <>reacted {n.reaction} to your comment</>}
                   </div>
                   <div style={{ fontSize: 11, color: '#A6927C', marginTop: 2 }}>{timeAgo(n.created_at)}</div>
 
