@@ -188,7 +188,7 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
 }
 .auth-drawer.is-open { transform: translateX(0); }
 .auth-drawer-tabs { display: flex; gap: 8px; background: #F3E9DC; border-radius: 999px; padding: 4px; margin-bottom: 28px; }
-.auth-drawer-tabs button { flex: 1; padding: 10px; font-size: 14px; background: transparent; color: var(--ink-soft); }
+.auth-drawer-tabs button { flex: 1; padding: 10px; font-size: 14px; background: transparent; color: var(--ink-soft); border: none; border-radius: 999px; cursor: pointer; font-family: 'Figtree', sans-serif; font-weight: 600; }
 .auth-drawer-tabs button.active { background: #fff; color: var(--ink); box-shadow: 0 2px 8px rgba(0, 0, 0, .08); }
 
 /* ---- Landing hero / scroll reveal ---- */
