@@ -2,6 +2,8 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
+import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
+import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import Feed from './pages/Feed.jsx'
 import Profile from './pages/Profile.jsx'
 import Search from './pages/Search.jsx'
@@ -22,6 +24,8 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/search" element={<Search />} />

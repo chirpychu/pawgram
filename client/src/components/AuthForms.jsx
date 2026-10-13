@@ -15,10 +15,20 @@ export function LoginForm({ onSuccess }) {
     setBusy(true)
     setMsg({ text: 'Logging in…', type: '' })
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: `${username.trim()}@pawgram-users.com`,
-      password,
+    // Supabase Auth itself only knows email+password; this app logs in by
+    // username, so resolve it to the account's real email via the locked-
+    // down RPC first (see the username_to_email_lookup migration).
+    const { data: email, error: lookupError } = await supabase.rpc('username_to_email', {
+      p_username: username.trim(),
     })
+
+    if (lookupError || !email) {
+      setMsg({ text: 'Incorrect username or password.', type: 'error' })
+      setBusy(false)
+      return
+    }
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setMsg({ text: 'Incorrect username or password.', type: 'error' })
@@ -64,6 +74,7 @@ export function SignupForm({ onSuccess }) {
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState({ text: '', type: '' })
   const [busy, setBusy] = useState(false)
@@ -90,10 +101,11 @@ export function SignupForm({ onSuccess }) {
       return
     }
 
-    // Supabase Auth needs an email, so we generate a private one behind the
-    // scenes and store the real username in the user's metadata + profiles row.
+    // The real email is what makes "forgot username/password" possible
+    // later — Supabase's own reset-password email goes straight to it,
+    // and the username -> email RPC used at login resolves to it too.
     const { error } = await supabase.auth.signUp({
-      email: `${username.trim()}@pawgram-users.com`,
+      email: email.trim(),
       password,
       options: { data: { username: username.trim(), display_name: displayName.trim() } },
     })
@@ -146,6 +158,20 @@ export function SignupForm({ onSuccess }) {
       />
       <div style={{ fontSize: 12, color: 'var(--ink-faint)', margin: '0 0 18px' }}>
         This is the name shown on your profile and posts — change it anytime.
+      </div>
+
+      <label htmlFor="signup-email">Email</label>
+      <input
+        id="signup-email"
+        type="email"
+        autoComplete="email"
+        required
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        style={{ marginBottom: 6 }}
+      />
+      <div style={{ fontSize: 12, color: 'var(--ink-faint)', margin: '0 0 18px' }}>
+        Only used to recover your username or password — never shown on your profile.
       </div>
 
       <label htmlFor="signup-password">Password</label>

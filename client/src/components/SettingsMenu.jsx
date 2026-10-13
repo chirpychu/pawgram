@@ -18,7 +18,33 @@ export default function SettingsMenu({ me }) {
   const wrapRef = useRef(null)
   const toggleRef = useRef(null)
 
+  // Accounts created before real emails were collected got a synthetic
+  // "username@pawgram-users.com" address — those can't receive a password
+  // reset email, so this surfaces a one-time prompt to add a real one.
+  const [authEmail, setAuthEmail] = useState(null)
+  const [newEmail, setNewEmail] = useState('')
+  const [emailMsg, setEmailMsg] = useState('')
+  const [savingEmail, setSavingEmail] = useState(false)
+  const needsRealEmail = authEmail?.endsWith('@pawgram-users.com')
+
   useEffect(() => { setIsPrivate(Boolean(me?.is_private)) }, [me?.is_private])
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => setAuthEmail(data?.user?.email || null))
+  }, [])
+
+  async function addRealEmail() {
+    if (!newEmail.trim() || savingEmail) return
+    setSavingEmail(true)
+    setEmailMsg('')
+    const { error } = await supabase.auth.updateUser({ email: newEmail.trim() })
+    setSavingEmail(false)
+    if (error) {
+      setEmailMsg(error.message)
+      return
+    }
+    setEmailMsg('Check your inbox to confirm the new email.')
+  }
 
   function openMenu() {
     const rect = toggleRef.current.getBoundingClientRect()
@@ -84,6 +110,34 @@ export default function SettingsMenu({ me }) {
           >
             {saving ? 'Saving…' : `Switch to ${isPrivate ? 'Public' : 'Private'}`}
           </button>
+
+          {needsRealEmail && (
+            <>
+              <div style={{ borderTop: '1px solid #EFE3D2', margin: '4px 0 8px' }} />
+              <div style={{ padding: '6px 10px 2px', fontSize: 13, fontWeight: 600, color: '#3A2E26' }}>Add a recovery email</div>
+              <div style={{ padding: '2px 10px 8px', fontSize: 13, color: '#6B5E54' }}>
+                Your account has no real email yet, so you can't reset your password if you forget it. Add one now.
+              </div>
+              <div style={{ padding: '0 10px 10px', display: 'flex', gap: 6 }}>
+                <input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  style={{ flex: 1, minWidth: 0, padding: '8px 10px', border: '2px solid #E3D6C6', borderRadius: 8, fontSize: 13, outline: 'none' }}
+                />
+                <button
+                  onClick={addRealEmail}
+                  disabled={savingEmail}
+                  className="btn"
+                  style={{ background: '#D9784F', color: '#fff', padding: '8px 12px', fontSize: 12, flex: 'none' }}
+                >
+                  {savingEmail ? '…' : 'Add'}
+                </button>
+              </div>
+              {emailMsg && <div style={{ padding: '0 10px 8px', fontSize: 12, color: '#6B9080' }}>{emailMsg}</div>}
+            </>
+          )}
 
           <div style={{ borderTop: '1px solid #EFE3D2', margin: '4px 0 8px' }} />
 

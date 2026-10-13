@@ -10,6 +10,9 @@ export default function LoginPage() {
       footer={<>New to Pawgram? <Link to="/signup">Sign up</Link></>}
     >
       <LoginForm />
+      <div style={{ textAlign: 'center', marginTop: 14 }}>
+        <Link to="/forgot-password" style={{ fontSize: 13 }}>Forgot username or password?</Link>
+      </div>
     </AuthScreen>
   )
 }

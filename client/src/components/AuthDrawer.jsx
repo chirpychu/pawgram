@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { LoginForm, SignupForm } from './AuthForms.jsx'
 
 /**
@@ -68,6 +68,11 @@ export default function AuthDrawer({ initialTab }) {
           </div>
 
           {tab === 'login' ? <LoginForm /> : <SignupForm />}
+          {tab === 'login' && (
+            <div style={{ textAlign: 'center', marginTop: 14 }}>
+              <Link to="/forgot-password" style={{ fontSize: 13 }}>Forgot username or password?</Link>
+            </div>
+          )}
         </div>
       </div>
     </>
