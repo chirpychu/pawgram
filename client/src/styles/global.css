@@ -107,6 +107,16 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
   .left-sidebar .settings-menu .navitem { padding: 8px 12px !important; font-size: 12px !important; }
 }
 
+/* ---- Notification bell ---- */
+.right-sidebar { padding-top: 78px !important; }
+@media (max-width: 860px) {
+  .notification-bell { top: 64px !important; right: 16px !important; }
+  .right-sidebar { padding-top: 0 !important; }
+}
+@media (max-width: 420px) {
+  .notification-bell button { width: 36px !important; height: 36px !important; }
+}
+
 /* ---- Login / signup card ---- */
 .auth-screen {
   min-height: 100vh;

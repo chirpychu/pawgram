@@ -6,6 +6,7 @@ import { supabase } from '../services/supabaseClient'
 import { compressImage } from '../utils/image'
 import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
+import NotificationBell from '../components/NotificationBell.jsx'
 
 function Composer({ me, onPosted }) {
   const [caption, setCaption] = useState('')
@@ -131,7 +132,7 @@ function Suggestions({ me, onFollowed }) {
 
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name')
+      .select('id, username, display_name, is_private')
       .neq('id', me.id)
       .limit(25)
 
@@ -140,16 +141,24 @@ function Suggestions({ me, onFollowed }) {
       return
     }
 
-    const suggestions = profiles.filter((p) => !followingIds.has(p.id)).slice(0, 5)
+    // Anyone already followed or already requested isn't a fresh suggestion.
+    const suggestions = profiles.filter((p) => !followingIds.has(p.id)).slice(0, 5).map((p) => ({ ...p, status: 'none' }))
     setState({ loading: false, people: suggestions })
   }, [me.id])
 
   useEffect(() => { load() }, [load])
 
-  async function follow(id) {
-    const { error } = await supabase.from('follows').insert({ follower_id: me.id, following_id: id })
-    if (error) return
-    setState((s) => ({ ...s, people: s.people.map((p) => (p.id === id ? { ...p, following: true } : p)) }))
+  async function follow(p) {
+    if (p.is_private) {
+      const { error } = await supabase.from('follows').insert({ follower_id: me.id, following_id: p.id, status: 'pending' })
+      if (error) return
+      await supabase.from('notifications').insert({ recipient_id: p.id, actor_id: me.id, type: 'follow_request' })
+      setState((s) => ({ ...s, people: s.people.map((x) => (x.id === p.id ? { ...x, status: 'pending' } : x)) }))
+    } else {
+      const { error } = await supabase.from('follows').insert({ follower_id: me.id, following_id: p.id })
+      if (error) return
+      setState((s) => ({ ...s, people: s.people.map((x) => (x.id === p.id ? { ...x, status: 'accepted' } : x)) }))
+    }
     onFollowed()
   }
 
@@ -164,11 +173,11 @@ function Suggestions({ me, onFollowed }) {
           <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6B9080', flex: '0 0 36px' }} />
           <Link to={`/profile?u=${encodeURIComponent(p.username)}`} style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#3A2E26' }}>{p.display_name || p.username}</Link>
           <button
-            onClick={() => follow(p.id)}
-            disabled={p.following}
+            onClick={() => follow(p)}
+            disabled={p.status !== 'none'}
             className="btn"
             style={{ background: '#FBF3E9', color: '#D9784F', padding: '6px 14px', fontSize: 13 }}
-          >{p.following ? 'Following' : 'Follow'}</button>
+          >{p.status === 'accepted' ? 'Following' : p.status === 'pending' ? 'Requested' : p.is_private ? 'Request' : 'Follow'}</button>
         </div>
       ))}
     </div>
@@ -189,6 +198,7 @@ export default function Feed() {
         .from('follows')
         .select('following_id')
         .eq('follower_id', me.id)
+        .eq('status', 'accepted')
 
       if (followsError) {
         setFeed({ loading: false, posts: [], error: followsError.message })
@@ -231,6 +241,7 @@ export default function Feed() {
 
   return (
     <div className="app-shell" style={{ display: 'flex', maxWidth: 1320, margin: '0 auto', minHeight: '100vh' }}>
+      <NotificationBell me={me} />
       <AppSidebar
         active="home"
         me={me}
