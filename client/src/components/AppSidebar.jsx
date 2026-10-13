@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import ExploreDropdown from './ExploreDropdown.jsx'
 import SettingsMenu from './SettingsMenu.jsx'
 
 /**
@@ -18,7 +17,10 @@ export default function AppSidebar({ active, me, extra }) {
         <span className="nav-label">Home</span>
       </Link>
 
-      <ExploreDropdown active={active === 'explore'} />
+      <Link to="/explore" className={`navitem ${active === 'explore' ? 'active' : ''}`}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
+        <span className="nav-label">Explore</span>
+      </Link>
 
       <Link to={me ? `/profile?u=${encodeURIComponent(me.username)}` : '#'} className={`navitem ${active === 'profile' ? 'active' : ''}`}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" /></svg>

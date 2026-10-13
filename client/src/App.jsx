@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Landing from './pages/Landing.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
@@ -6,7 +6,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage.jsx'
 import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import Feed from './pages/Feed.jsx'
 import Profile from './pages/Profile.jsx'
-import Search from './pages/Search.jsx'
+import Explore from './pages/Explore.jsx'
 import AuthDrawer from './components/AuthDrawer.jsx'
 
 export default function App() {
@@ -28,7 +28,9 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/feed" element={<Feed />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/search" element={<Search />} />
+        <Route path="/explore" element={<Explore />} />
+        {/* Old dropdown-search link shape — keep it working, just hand off to /explore. */}
+        <Route path="/search" element={<Navigate to={{ pathname: '/explore', search: location.search }} replace />} />
       </Routes>
 
       {backgroundLocation && (
