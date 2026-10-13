@@ -34,7 +34,7 @@ export default function Landing() {
 
       {/* NAV */}
       <div className="nav-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '28px 48px', flexWrap: 'wrap', gap: 16 }}>
-        <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 26, color: '#3A2E26' }}>Pawgram</div>
+        <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 30, color: '#3A2E26' }}>🐾 Pawgram</div>
         <div className="nav-row-links" style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
           <a href="#playdates-section" style={{ fontWeight: 500 }}>Playdates</a>
           <a href="#about-section" style={{ fontWeight: 500 }}>About</a>
