@@ -208,7 +208,7 @@ export default function Profile() {
             </div>
           )}
           {!posts.loading && !posts.error && posts.items.map((p) => (
-            <PostCard key={p.id} post={p} showAuthor={false} onDelete={isMe ? deletePost : undefined} />
+            <PostCard key={p.id} post={p} me={me} showAuthor={false} onDelete={isMe ? deletePost : undefined} />
           ))}
         </div>
       </div>

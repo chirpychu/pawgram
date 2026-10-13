@@ -258,7 +258,7 @@ export default function Feed() {
             </div>
           )}
           {!feed.loading && !feed.error && feed.posts.map((p) => (
-            <PostCard key={p.id} post={p} onDelete={p.author_id === me.id ? deletePost : undefined} />
+            <PostCard key={p.id} post={p} me={me} onDelete={p.author_id === me.id ? deletePost : undefined} />
           ))}
         </div>
       </div>

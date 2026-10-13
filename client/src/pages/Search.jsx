@@ -121,7 +121,7 @@ export default function Search() {
                 {results.loadingPosts && <div className="card" style={{ padding: '18px 20px', color: '#A6927C', fontSize: 14 }}>{postsLabel}</div>}
                 {!results.loadingPosts && results.postsError && <div className="card" style={{ padding: '18px 20px', color: '#C0392B' }}>Couldn't search posts: {results.postsError}</div>}
                 {!results.loadingPosts && !results.postsError && results.posts.length === 0 && <div className="card" style={{ padding: '18px 20px', color: '#A6927C', fontSize: 14 }}>No matching posts found.</div>}
-                {!results.loadingPosts && !results.postsError && results.posts.map((p) => <PostCard key={p.id} post={p} imageMaxHeight={360} />)}
+                {!results.loadingPosts && !results.postsError && results.posts.map((p) => <PostCard key={p.id} post={p} me={me} imageMaxHeight={360} />)}
               </div>
             </div>
           </div>
