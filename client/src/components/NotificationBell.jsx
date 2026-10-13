@@ -23,7 +23,7 @@ export default function NotificationBell({ me }) {
     if (!me) return
     const { data, error } = await supabase
       .from('notifications')
-      .select('id, type, read, created_at, actor_id, reaction, post_id, comment_id, actor:profiles!notifications_actor_id_fkey(username, display_name, avatar_url)')
+      .select('id, type, read, created_at, actor_id, reaction, post_id, comment_id, message, actor:profiles!notifications_actor_id_fkey(username, display_name, avatar_url)')
       .eq('recipient_id', me.id)
       .order('created_at', { ascending: false })
       .limit(30)
@@ -159,17 +159,27 @@ export default function NotificationBell({ me }) {
           )}
 
           {!loading && notifications.map((n) => {
-            const name = n.actor?.display_name || n.actor?.username || 'Someone'
+            const isSystem = n.type === 'post_removed'
+            const name = isSystem ? 'Pawgram' : (n.actor?.display_name || n.actor?.username || 'Someone')
             return (
               <div key={n.id} style={{ display: 'flex', gap: 10, padding: '10px 8px', borderRadius: 12, background: n.read ? 'transparent' : '#FBF3E9' }}>
-                <Avatar url={n.actor?.avatar_url} name={name} size={34} />
+                {isSystem ? (
+                  <div style={{ width: 34, height: 34, flex: '0 0 34px', borderRadius: '50%', background: '#F3E9DC', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>🐾</div>
+                ) : (
+                  <Avatar url={n.actor?.avatar_url} name={name} size={34} />
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: 13, color: '#3A2E26' }}>
-                    <Link to={`/profile?u=${encodeURIComponent(n.actor?.username || '')}`} style={{ fontWeight: 600, color: '#3A2E26' }}>{name}</Link>{' '}
+                    {isSystem ? (
+                      <span style={{ fontWeight: 600, color: '#3A2E26' }}>{name}</span>
+                    ) : (
+                      <Link to={`/profile?u=${encodeURIComponent(n.actor?.username || '')}`} style={{ fontWeight: 600, color: '#3A2E26' }}>{name}</Link>
+                    )}{' '}
                     {n.type === 'follow_request' && 'requested to follow you'}
                     {n.type === 'follow_accepted' && 'accepted your follow request'}
                     {n.type === 'post_reaction' && <>reacted {n.reaction} to your post</>}
                     {n.type === 'comment_reaction' && <>reacted {n.reaction} to your comment</>}
+                    {n.type === 'post_removed' && (n.message || 'removed one of your posts')}
                   </div>
                   <div style={{ fontSize: 11, color: '#A6927C', marginTop: 2 }}>{timeAgo(n.created_at)}</div>
 
