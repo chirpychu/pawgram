@@ -6,8 +6,9 @@ import { supabase } from '../services/supabaseClient'
 import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
+import FollowListModal from '../components/FollowListModal.jsx'
 
-function ProfileHeader({ profile, isMe, postCount, followState, onToggleFollow, onSaved }) {
+function ProfileHeader({ profile, isMe, postCount, followerCount, followingCount, followState, showCounts, onToggleFollow, onSaved, onOpenFollowers, onOpenFollowing }) {
   const [editing, setEditing] = useState(false)
   const [displayName, setDisplayName] = useState(profile.display_name || '')
   const [error, setError] = useState('')
@@ -71,7 +72,24 @@ function ProfileHeader({ profile, isMe, postCount, followState, onToggleFollow, 
       <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 22, color: '#3A2E26' }}>{profile.display_name || profile.username}</div>
       <div style={{ fontSize: 14, color: '#A6927C', marginTop: 4 }}>@{profile.username}</div>
       {profile.bio && <div style={{ fontSize: 15, color: '#3A2E26', marginTop: 14, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>{profile.bio}</div>}
-      <div style={{ fontSize: 14, color: '#6B5E54', marginTop: 14 }}>{postCount ?? 0} post{postCount === 1 ? '' : 's'}</div>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 22, marginTop: 14, fontSize: 14, color: '#6B5E54' }}>
+        <span>{postCount ?? 0} post{postCount === 1 ? '' : 's'}</span>
+        {showCounts ? (
+          <>
+            <button onClick={onOpenFollowers} className="plain" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', color: '#6B5E54' }}>
+              <strong style={{ color: '#3A2E26' }}>{followerCount ?? 0}</strong> follower{followerCount === 1 ? '' : 's'}
+            </button>
+            <button onClick={onOpenFollowing} className="plain" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, font: 'inherit', color: '#6B5E54' }}>
+              <strong style={{ color: '#3A2E26' }}>{followingCount ?? 0}</strong> following
+            </button>
+          </>
+        ) : (
+          <>
+            <span>{followerCount ?? 0} follower{followerCount === 1 ? '' : 's'}</span>
+            <span>{followingCount ?? 0} following</span>
+          </>
+        )}
+      </div>
       {!isMe && (
         <button
           disabled={followBusy}
@@ -98,8 +116,9 @@ export default function Profile() {
   // followState is one of 'none' | 'pending' | 'accepted' — only 'accepted'
   // is a real follow; 'pending' means a request is awaiting the other
   // person's approval (private accounts only).
-  const [state, setState] = useState({ loading: true, profile: null, error: null, postCount: 0, followState: 'none' })
+  const [state, setState] = useState({ loading: true, profile: null, error: null, postCount: 0, followerCount: 0, followingCount: 0, followState: 'none' })
   const [posts, setPosts] = useState({ loading: true, items: [] })
+  const [listModal, setListModal] = useState(null) // 'followers' | 'following' | null
 
   const load = useCallback(async () => {
     if (!me || !username) return
@@ -112,16 +131,17 @@ export default function Profile() {
       .maybeSingle()
 
     if (error || !profile) {
-      setState({ loading: false, profile: null, error: `Couldn't find a profile for "${username}".`, postCount: 0, followState: 'none' })
+      setState({ loading: false, profile: null, error: `Couldn't find a profile for "${username}".`, postCount: 0, followerCount: 0, followingCount: 0, followState: 'none' })
       return
     }
 
     const isMe = profile.id === me.id
 
-    const { count: postCount } = await supabase
-      .from('posts')
-      .select('id', { count: 'exact', head: true })
-      .eq('author_id', profile.id)
+    const [{ count: postCount }, { count: followerCount }, { count: followingCount }] = await Promise.all([
+      supabase.from('posts').select('id', { count: 'exact', head: true }).eq('author_id', profile.id),
+      supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', profile.id).eq('status', 'accepted'),
+      supabase.from('follows').select('following_id', { count: 'exact', head: true }).eq('follower_id', profile.id).eq('status', 'accepted'),
+    ])
 
     let followState = 'none'
     if (!isMe) {
@@ -134,7 +154,7 @@ export default function Profile() {
       followState = existingFollow?.status || 'none'
     }
 
-    setState({ loading: false, profile, error: null, postCount: postCount ?? 0, followState })
+    setState({ loading: false, profile, error: null, postCount: postCount ?? 0, followerCount: followerCount ?? 0, followingCount: followingCount ?? 0, followState })
 
     setPosts({ loading: true, items: [] })
     const { data: profilePosts, error: postsError } = await supabase
@@ -192,6 +212,7 @@ export default function Profile() {
   if (authLoading || !me) return null
 
   const isMe = state.profile?.id === me.id
+  const locked = !isMe && state.profile?.is_private && state.followState !== 'accepted'
 
   return (
     <div className="app-shell" style={{ display: 'flex', maxWidth: 1320, margin: '0 auto', minHeight: '100vh' }}>
@@ -207,15 +228,20 @@ export default function Profile() {
               profile={state.profile}
               isMe={isMe}
               postCount={state.postCount}
+              followerCount={state.followerCount}
+              followingCount={state.followingCount}
               followState={state.followState}
+              showCounts={!locked}
               onToggleFollow={toggleFollow}
               onSaved={() => load()}
+              onOpenFollowers={() => setListModal('followers')}
+              onOpenFollowing={() => setListModal('following')}
             />
           )}
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {!isMe && state.profile?.is_private && state.followState !== 'accepted' ? (
+          {locked ? (
             <div className="card" style={{ padding: 32, textAlign: 'center' }}>
               <div style={{ fontSize: 28, marginBottom: 10 }}>🔒</div>
               <div style={{ fontSize: 16, fontWeight: 600, color: '#3A2E26' }}>This account is private</div>
@@ -243,6 +269,10 @@ export default function Profile() {
           )}
         </div>
       </div>
+
+      {listModal && state.profile && (
+        <FollowListModal profileId={state.profile.id} mode={listModal} onClose={() => setListModal(null)} />
+      )}
     </div>
   )
 }
