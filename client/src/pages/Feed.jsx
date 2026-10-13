@@ -8,6 +8,7 @@ import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
 import MessageBubble from '../components/MessageBubble.jsx'
+import Avatar from '../components/Avatar.jsx'
 
 function Composer({ me, onPosted }) {
   const [caption, setCaption] = useState('')
@@ -91,7 +92,7 @@ function Composer({ me, onPosted }) {
   return (
     <div className="card" style={{ padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#6B9080', flex: '0 0 44px' }} />
+        <Avatar url={me?.avatar_url} name={me?.display_name || me?.username} size={44} />
         <input
           id="composer-input"
           type="text"
@@ -133,7 +134,7 @@ function Suggestions({ me, onFollowed }) {
 
     const { data: profiles, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name, is_private')
+      .select('id, username, display_name, avatar_url, is_private')
       .neq('id', me.id)
       .limit(25)
 
@@ -171,7 +172,7 @@ function Suggestions({ me, onFollowed }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       {state.people.map((p) => (
         <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6B9080', flex: '0 0 36px' }} />
+          <Avatar url={p.avatar_url} name={p.display_name || p.username} size={36} />
           <Link to={`/profile?u=${encodeURIComponent(p.username)}`} style={{ flex: 1, fontSize: 14, fontWeight: 500, color: '#3A2E26' }}>{p.display_name || p.username}</Link>
           <button
             onClick={() => follow(p)}
@@ -210,7 +211,7 @@ export default function Feed() {
 
       const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name), post_images(storage_path, position)')
+        .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name, avatar_url), post_images(storage_path, position)')
         .in('author_id', authorIds)
         .order('created_at', { ascending: false })
         .limit(30)
@@ -266,7 +267,7 @@ export default function Feed() {
 
       <div className="right-sidebar" style={{ width: 280, flex: '0 0 280px', padding: 28, display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Link to={`/profile?u=${encodeURIComponent(me.username)}`} className="card plain my-profile-card" style={{ padding: 20, textAlign: 'center', display: 'block' }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#D9784F', margin: '0 auto 12px' }} />
+          <Avatar url={me.avatar_url} name={me.display_name || me.username} size={64} color="#D9784F" style={{ margin: '0 auto 12px' }} />
           <div style={{ fontWeight: 600, fontSize: 16 }}>{me.display_name || me.username}</div>
           <div style={{ fontSize: 13, color: '#A6927C' }}>View your profile</div>
         </Link>

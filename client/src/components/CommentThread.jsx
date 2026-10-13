@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { timeAgo } from '../utils/timeAgo'
 import ReactionBar from './ReactionBar.jsx'
+import Avatar from './Avatar.jsx'
 
 function Comment({ comment, childrenByParent, me, onReply, postId, depth = 0 }) {
   const [replying, setReplying] = useState(false)
@@ -22,7 +23,7 @@ function Comment({ comment, childrenByParent, me, onReply, postId, depth = 0 }) 
   return (
     <div style={{ marginLeft: depth > 0 ? 36 : 0, marginTop: depth > 0 ? 10 : 16 }}>
       <div style={{ display: 'flex', gap: 10 }}>
-        <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#6B9080', flex: '0 0 30px' }} />
+        <Avatar url={comment.author?.avatar_url} name={name} size={30} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ background: '#FBF3E9', borderRadius: 14, padding: '8px 14px', display: 'inline-block', maxWidth: '100%' }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: '#3A2E26' }}>{name}</div>
@@ -83,7 +84,7 @@ export default function CommentThread({ postId, me, onCountChange }) {
   const load = useCallback(async () => {
     const { data, error } = await supabase
       .from('comments')
-      .select('id, body, created_at, user_id, parent_comment_id, author:profiles!comments_user_id_fkey(username, display_name)')
+      .select('id, body, created_at, user_id, parent_comment_id, author:profiles!comments_user_id_fkey(username, display_name, avatar_url)')
       .eq('post_id', postId)
       .order('created_at', { ascending: true })
 

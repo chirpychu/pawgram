@@ -18,3 +18,11 @@ export function getPostImageUrl(storagePath) {
   const { data } = supabase.storage.from('post-images').getPublicUrl(storagePath)
   return data.publicUrl
 }
+
+/** Builds the public URL for a file in the avatars storage bucket, or null
+ *  if the profile hasn't set one (callers fall back to a placeholder). */
+export function getAvatarUrl(storagePath) {
+  if (!storagePath) return null
+  const { data } = supabase.storage.from('avatars').getPublicUrl(storagePath)
+  return data.publicUrl
+}

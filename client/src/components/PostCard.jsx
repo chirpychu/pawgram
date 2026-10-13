@@ -4,6 +4,7 @@ import { getPostImageUrl, supabase } from '../services/supabaseClient'
 import { timeAgo } from '../utils/timeAgo'
 import ReactionBar from './ReactionBar.jsx'
 import CommentThread from './CommentThread.jsx'
+import Avatar from './Avatar.jsx'
 
 /**
  * Renders one post. `showAuthor` controls whether the author's name/avatar
@@ -40,7 +41,7 @@ export default function PostCard({ post, me, showAuthor = true, onDelete, imageM
     <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
       {showAuthor ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '18px 22px' }}>
-          <div style={{ width: 42, height: 42, borderRadius: '50%', background: '#D9784F', flex: '0 0 42px' }} />
+          <Avatar url={post.author?.avatar_url} name={name} size={42} color="#D9784F" />
           <div>
             <Link to={`/profile?u=${encodeURIComponent(uname)}`} style={{ fontWeight: 600, fontSize: 15, color: '#3A2E26' }}>{name}</Link>
             <div style={{ fontSize: 13, color: '#A6927C' }}>{meta}</div>

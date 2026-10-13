@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { useElapsedLabel } from '../hooks/useElapsedLabel.js'
@@ -8,6 +8,9 @@ import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
 import MessageBubble from '../components/MessageBubble.jsx'
 import FollowListModal from '../components/FollowListModal.jsx'
+import Avatar from '../components/Avatar.jsx'
+
+const MAX_AVATAR_BYTES = 5 * 1024 * 1024
 
 function ProfileHeader({ profile, isMe, postCount, followerCount, followingCount, followState, showCounts, onToggleFollow, onSaved, onOpenFollowers, onOpenFollowing }) {
   const [editing, setEditing] = useState(false)
@@ -16,6 +19,53 @@ function ProfileHeader({ profile, isMe, postCount, followerCount, followingCount
   const [saving, setSaving] = useState(false)
   const label = useElapsedLabel(saving, 'Saving…')
   const [followBusy, setFollowBusy] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const [avatarError, setAvatarError] = useState('')
+  const fileInputRef = useRef(null)
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // let the same file be picked again later if needed
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setAvatarError('Please choose an image file.')
+      return
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      setAvatarError('That image is too large — please pick one under 5MB.')
+      return
+    }
+
+    setAvatarError('')
+    setUploadingAvatar(true)
+
+    const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
+    const path = `${profile.id}/${Date.now()}.${ext}`
+    const previousPath = profile.avatar_url
+
+    const { error: uploadError } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
+    if (uploadError) {
+      setUploadingAvatar(false)
+      setAvatarError("Couldn't upload: " + uploadError.message)
+      return
+    }
+
+    const { error: updateError } = await supabase.from('profiles').update({ avatar_url: path }).eq('id', profile.id)
+    setUploadingAvatar(false)
+    if (updateError) {
+      setAvatarError("Couldn't save: " + updateError.message)
+      return
+    }
+
+    // Best-effort cleanup of the old file — not worth failing the whole
+    // change over if this doesn't succeed.
+    if (previousPath && previousPath !== path) {
+      supabase.storage.from('avatars').remove([previousPath])
+    }
+
+    onSaved(null)
+  }
 
   async function save() {
     const trimmed = displayName.trim()
@@ -69,7 +119,51 @@ function ProfileHeader({ profile, isMe, postCount, followerCount, followingCount
 
   return (
     <div>
-      <div style={{ width: 84, height: 84, borderRadius: '50%', background: '#D9784F', margin: '0 auto 16px' }} />
+      <div style={{ position: 'relative', width: 84, height: 84, margin: '0 auto 16px' }}>
+        <Avatar url={profile.avatar_url} name={profile.display_name || profile.username} size={84} color="#D9784F" />
+        {isMe && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              style={{ display: 'none' }}
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingAvatar}
+              title="Change profile picture"
+              aria-label="Change profile picture"
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 30,
+                height: 30,
+                borderRadius: '50%',
+                background: '#D9784F',
+                border: '3px solid #fff',
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: uploadingAvatar ? 'default' : 'pointer',
+              }}
+            >
+              {uploadingAvatar ? (
+                <span style={{ fontSize: 10 }}>…</span>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+              )}
+            </button>
+          </>
+        )}
+      </div>
+      {avatarError && <div style={{ fontSize: 13, color: '#C0392B', marginBottom: 10 }}>{avatarError}</div>}
       <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 22, color: '#3A2E26' }}>{profile.display_name || profile.username}</div>
       <div style={{ fontSize: 14, color: '#A6927C', marginTop: 4 }}>@{profile.username}</div>
       {profile.bio && <div style={{ fontSize: 15, color: '#3A2E26', marginTop: 14, maxWidth: 420, marginLeft: 'auto', marginRight: 'auto' }}>{profile.bio}</div>}
@@ -127,7 +221,7 @@ export default function Profile() {
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name, bio, is_private')
+      .select('id, username, display_name, bio, avatar_url, is_private')
       .eq('username', username)
       .maybeSingle()
 

@@ -8,11 +8,12 @@ import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
 import MessageBubble from '../components/MessageBubble.jsx'
+import Avatar from '../components/Avatar.jsx'
 
 function PersonRow({ p }) {
   return (
     <Link to={`/profile?u=${encodeURIComponent(p.username)}`} className="card plain" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 14 }}>
-      <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#6B9080', flex: '0 0 44px' }} />
+      <Avatar url={p.avatar_url} name={p.display_name || p.username} size={44} />
       <div>
         <div style={{ fontWeight: 600, color: '#3A2E26' }}>{p.display_name || p.username}</div>
         <div style={{ fontSize: 13, color: '#A6927C' }}>@{p.username}</div>
@@ -37,8 +38,8 @@ export default function Search() {
 
     try {
       const [byUsername, byDisplayName] = await Promise.all([
-        supabase.from('profiles').select('id, username, display_name').ilike('username', pattern).limit(20),
-        supabase.from('profiles').select('id, username, display_name').ilike('display_name', pattern).limit(20),
+        supabase.from('profiles').select('id, username, display_name, avatar_url').ilike('username', pattern).limit(20),
+        supabase.from('profiles').select('id, username, display_name, avatar_url').ilike('display_name', pattern).limit(20),
       ])
       if (byUsername.error || byDisplayName.error) throw new Error((byUsername.error || byDisplayName.error).message)
 
@@ -53,7 +54,7 @@ export default function Search() {
     try {
       const { data: posts, error } = await supabase
         .from('posts')
-        .select('id, caption, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name), post_images(storage_path, position)')
+        .select('id, caption, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name, avatar_url), post_images(storage_path, position)')
         .ilike('caption', pattern)
         .order('created_at', { ascending: false })
         .limit(30)

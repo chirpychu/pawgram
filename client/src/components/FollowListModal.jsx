@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
+import Avatar from './Avatar.jsx'
 
 /**
  * Centered modal listing either the people following `profileId` or the
@@ -19,12 +20,12 @@ export default function FollowListModal({ profileId, mode, onClose }) {
         mode === 'followers'
           ? supabase
               .from('follows')
-              .select('follower:profiles!follows_follower_id_fkey(id, username, display_name)')
+              .select('follower:profiles!follows_follower_id_fkey(id, username, display_name, avatar_url)')
               .eq('following_id', profileId)
               .eq('status', 'accepted')
           : supabase
               .from('follows')
-              .select('following:profiles!follows_following_id_fkey(id, username, display_name)')
+              .select('following:profiles!follows_following_id_fkey(id, username, display_name, avatar_url)')
               .eq('follower_id', profileId)
               .eq('status', 'accepted')
 
@@ -73,7 +74,7 @@ export default function FollowListModal({ profileId, mode, onClose }) {
             className="plain"
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 4px' }}
           >
-            <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#6B9080', flex: '0 0 38px' }} />
+            <Avatar url={p.avatar_url} name={p.display_name || p.username} size={38} />
             <div>
               <div style={{ fontWeight: 600, fontSize: 14, color: '#3A2E26' }}>{p.display_name || p.username}</div>
               <div style={{ fontSize: 12, color: '#A6927C' }}>@{p.username}</div>

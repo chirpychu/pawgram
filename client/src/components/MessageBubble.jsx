@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../services/supabaseClient'
 import { timeAgo } from '../utils/timeAgo'
+import Avatar from './Avatar.jsx'
 
 /**
  * Fixed bottom-right speech-bubble, present on every logged-in page. Shows
@@ -31,7 +32,7 @@ export default function MessageBubble({ me }) {
     const { data, error } = await supabase
       .from('messages')
       .select(
-        'id, body, read, created_at, sender_id, recipient_id, sender:profiles!messages_sender_id_fkey(id, username, display_name), recipient:profiles!messages_recipient_id_fkey(id, username, display_name)'
+        'id, body, read, created_at, sender_id, recipient_id, sender:profiles!messages_sender_id_fkey(id, username, display_name, avatar_url), recipient:profiles!messages_recipient_id_fkey(id, username, display_name, avatar_url)'
       )
       .or(`sender_id.eq.${me.id},recipient_id.eq.${me.id}`)
       .order('created_at', { ascending: false })
@@ -127,7 +128,7 @@ export default function MessageBubble({ me }) {
     setNewError('')
     const { data: profile, error } = await supabase
       .from('profiles')
-      .select('id, username, display_name')
+      .select('id, username, display_name, avatar_url')
       .eq('username', uname)
       .maybeSingle()
     setLookingUp(false)
@@ -213,7 +214,7 @@ export default function MessageBubble({ me }) {
                       textAlign: 'left',
                     }}
                   >
-                    <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#6B9080', flex: '0 0 36px' }} />
+                    <Avatar url={c.other.avatar_url} name={c.other.display_name || c.other.username} size={36} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: 13, fontWeight: 600, color: '#3A2E26' }}>{c.other.display_name || c.other.username}</div>
                       <div style={{ fontSize: 12, color: '#A6927C', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -231,7 +232,7 @@ export default function MessageBubble({ me }) {
             <>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: '1px solid #EFE3D2' }}>
                 <button onClick={() => setThread(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 16, color: '#A6927C', padding: 4 }}>‹</button>
-                <div style={{ width: 30, height: 30, borderRadius: '50%', background: '#6B9080', flex: '0 0 30px' }} />
+                <Avatar url={thread.avatar_url} name={thread.display_name || thread.username} size={30} />
                 <div style={{ fontWeight: 600, fontSize: 14, color: '#3A2E26' }}>{thread.display_name || thread.username}</div>
               </div>
 
