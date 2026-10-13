@@ -4,6 +4,12 @@ import { useAuth } from '../hooks/useAuth.js'
 import { useElapsedLabel } from '../hooks/useElapsedLabel.js'
 import { supabase } from '../services/supabaseClient'
 import { compressImage } from '../utils/image'
+
+// Matches the post-images bucket's server-side file_size_limit (45MB) --
+// checked client-side too so a too-large video fails fast with a clear
+// message instead of a vague upload error after the wait.
+const MAX_VIDEO_BYTES = 45 * 1024 * 1024
+const VIDEO_EXT_BY_MIME = { 'video/mp4': 'mp4', 'video/quicktime': 'mov', 'video/webm': 'webm' }
 import AppSidebar from '../components/AppSidebar.jsx'
 import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
@@ -22,14 +28,30 @@ function Composer({ me, onPosted }) {
   function handleFileChange(e) {
     const f = e.target.files[0]
     if (!f) return
+
+    const isVideo = f.type.startsWith('video/')
+    if (isVideo && f.size > MAX_VIDEO_BYTES) {
+      setError(`That video is too large — please pick one under ${Math.floor(MAX_VIDEO_BYTES / (1024 * 1024))}MB.`)
+      e.target.value = ''
+      return
+    }
+
     setFile(f)
     setError('')
-    const reader = new FileReader()
-    reader.onload = () => setPreview(reader.result)
-    reader.readAsDataURL(f)
+
+    if (isVideo) {
+      // Object URLs (not a data: URL) so a multi-MB video doesn't get
+      // base64-encoded into a giant string just to preview it.
+      setPreview({ kind: 'video', url: URL.createObjectURL(f) })
+    } else {
+      const reader = new FileReader()
+      reader.onload = () => setPreview({ kind: 'image', url: reader.result })
+      reader.readAsDataURL(f)
+    }
   }
 
   function resetImage() {
+    if (preview?.kind === 'video') URL.revokeObjectURL(preview.url)
     setFile(null)
     setPreview(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
@@ -38,9 +60,11 @@ function Composer({ me, onPosted }) {
   async function createPost() {
     const trimmedCaption = caption.trim()
     if (!file) {
-      setError("Add a photo of your pet before posting — photo-less posts aren't allowed.")
+      setError("Add a photo or video of your pet before posting — media-less posts aren't allowed.")
       return
     }
+
+    const isVideo = file.type.startsWith('video/')
 
     setError('')
     setPosting(true)
@@ -56,26 +80,35 @@ function Composer({ me, onPosted }) {
         return
       }
 
-      const compressed = await compressImage(file)
-      const storagePath = `${me.id}/${post.id}-${Date.now()}.jpg`
+      let uploadBody, contentType, storagePath
+      if (isVideo) {
+        uploadBody = file
+        contentType = file.type
+        const ext = VIDEO_EXT_BY_MIME[file.type] || 'mp4'
+        storagePath = `${me.id}/${post.id}-${Date.now()}.${ext}`
+      } else {
+        uploadBody = await compressImage(file)
+        contentType = 'image/jpeg'
+        storagePath = `${me.id}/${post.id}-${Date.now()}.jpg`
+      }
 
       const { error: uploadError } = await supabase.storage
         .from('post-images')
-        .upload(storagePath, compressed, { contentType: 'image/jpeg' })
+        .upload(storagePath, uploadBody, { contentType })
 
       if (uploadError) {
         await supabase.from('posts').delete().eq('id', post.id)
-        setError("Couldn't upload the photo: " + uploadError.message)
+        setError(`Couldn't upload the ${isVideo ? 'video' : 'photo'}: ` + uploadError.message)
         return
       }
 
       const { error: imageError } = await supabase
         .from('post_images')
-        .insert({ post_id: post.id, storage_path: storagePath, position: 0 })
+        .insert({ post_id: post.id, storage_path: storagePath, position: 0, media_type: isVideo ? 'video' : 'image' })
 
       if (imageError) {
         await supabase.from('posts').delete().eq('id', post.id)
-        setError("Couldn't attach the photo: " + imageError.message)
+        setError(`Couldn't attach the ${isVideo ? 'video' : 'photo'}: ` + imageError.message)
         return
       }
 
@@ -109,16 +142,23 @@ function Composer({ me, onPosted }) {
 
       {preview && (
         <div className="composer-indent" style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 58 }}>
-          <img src={preview} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 12 }} />
-          <button onClick={resetImage} className="btn" style={{ background: '#FBF3E9', color: '#3A2E26', padding: '7px 14px', fontSize: 13 }}>Remove photo</button>
+          {preview.kind === 'video' ? (
+            <video src={preview.url} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 12, background: '#000' }} muted />
+          ) : (
+            <img src={preview.url} alt="" style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 12 }} />
+          )}
+          <button onClick={resetImage} className="btn" style={{ background: '#FBF3E9', color: '#3A2E26', padding: '7px 14px', fontSize: 13 }}>
+            Remove {preview.kind === 'video' ? 'video' : 'photo'}
+          </button>
         </div>
       )}
 
       <div className="composer-indent" style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 58, flexWrap: 'wrap' }}>
         <label className="btn" style={{ background: '#FBF3E9', color: '#D9784F', padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>
-          📷 Add a photo of your pet
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
+          📷 Add a photo or video
+          <input ref={fileInputRef} type="file" accept="image/*,video/*" onChange={handleFileChange} style={{ display: 'none' }} />
         </label>
+        <span style={{ fontSize: 12, color: '#A6927C' }}>Videos up to 45MB</span>
         {error && <div style={{ fontSize: 13, color: '#C0392B' }}>{error}</div>}
       </div>
     </div>
@@ -211,7 +251,7 @@ export default function Feed() {
 
       const { data: posts, error: postsError } = await supabase
         .from('posts')
-        .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name, avatar_url), post_images(storage_path, position)')
+        .select('id, caption, location, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name, avatar_url), post_images(storage_path, position, media_type)')
         .in('author_id', authorIds)
         .order('created_at', { ascending: false })
         .limit(30)

@@ -54,7 +54,7 @@ export default function Search() {
     try {
       const { data: posts, error } = await supabase
         .from('posts')
-        .select('id, caption, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name, avatar_url), post_images(storage_path, position)')
+        .select('id, caption, created_at, author_id, author:profiles!posts_author_id_fkey(username, display_name, avatar_url), post_images(storage_path, position, media_type)')
         .ilike('caption', pattern)
         .order('created_at', { ascending: false })
         .limit(30)

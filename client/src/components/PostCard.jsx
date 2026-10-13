@@ -67,7 +67,15 @@ export default function PostCard({ post, me, showAuthor = true, onDelete, imageM
         </div>
       )}
 
-      {image && (
+      {image && (image.media_type === 'video' ? (
+        <video
+          src={getPostImageUrl(image.storage_path)}
+          controls
+          playsInline
+          preload="metadata"
+          style={{ width: '100%', maxHeight: imageMaxHeight, display: 'block', background: '#000' }}
+        />
+      ) : (
         <img
           src={getPostImageUrl(image.storage_path)}
           loading="lazy"
@@ -75,7 +83,7 @@ export default function PostCard({ post, me, showAuthor = true, onDelete, imageM
           alt=""
           style={{ width: '100%', maxHeight: imageMaxHeight, objectFit: 'cover', display: 'block', background: '#EFE3D2' }}
         />
-      )}
+      ))}
 
       {post.caption && (
         <div style={{ padding: '16px 22px', fontSize: 15, color: '#3A2E26', whiteSpace: 'pre-wrap' }}>{post.caption}</div>

@@ -254,7 +254,7 @@ export default function Profile() {
     setPosts({ loading: true, items: [] })
     const { data: profilePosts, error: postsError } = await supabase
       .from('posts')
-      .select('id, author_id, caption, location, created_at, post_images(storage_path, position)')
+      .select('id, author_id, caption, location, created_at, post_images(storage_path, position, media_type)')
       .eq('author_id', profile.id)
       .order('created_at', { ascending: false })
 
