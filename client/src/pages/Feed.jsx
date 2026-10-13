@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { useElapsedLabel } from '../hooks/useElapsedLabel.js'
@@ -15,6 +15,8 @@ import PostCard from '../components/PostCard.jsx'
 import NotificationBell from '../components/NotificationBell.jsx'
 import MessageBubble from '../components/MessageBubble.jsx'
 import Avatar from '../components/Avatar.jsx'
+import TipCard from '../components/TipCard.jsx'
+import { PET_TIPS } from '../data/petTips.js'
 
 function Composer({ me, onPosted }) {
   const [caption, setCaption] = useState('')
@@ -299,8 +301,16 @@ export default function Feed() {
               <div style={{ fontSize: 14, color: '#6B5E54' }}>Follow a few pet parents on the right to see their posts here — or share your own above.</div>
             </div>
           )}
-          {!feed.loading && !feed.error && feed.posts.map((p) => (
-            <PostCard key={p.id} post={p} me={me} onDelete={p.author_id === me.id ? deletePost : undefined} />
+          {!feed.loading && !feed.error && feed.posts.map((p, i) => (
+            <Fragment key={p.id}>
+              <PostCard post={p} me={me} onDelete={p.author_id === me.id ? deletePost : undefined} />
+              {/* A pet tip after every 5th post — cycles through the list rather
+                  than repeating, so a long scroll doesn't see the same tip twice
+                  until it's gone through all of them. */}
+              {(i + 1) % 5 === 0 && (
+                <TipCard tip={PET_TIPS[Math.floor(i / 5) % PET_TIPS.length]} />
+              )}
+            </Fragment>
           ))}
         </div>
       </div>
