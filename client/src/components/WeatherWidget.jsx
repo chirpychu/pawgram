@@ -87,7 +87,7 @@ export default function WeatherWidget() {
 
   if (state.status === 'loading') {
     return (
-      <div style={wrapStyle}>
+      <div className="weather-widget" style={wrapStyle}>
         <div style={{ fontSize: 12, color: '#A6927C' }}>Checking local weather…</div>
       </div>
     )
@@ -97,6 +97,7 @@ export default function WeatherWidget() {
     return (
       <button
         onClick={requestLocation}
+        className="weather-widget"
         style={{ ...wrapStyle, border: '1px dashed #D9C7A8', cursor: 'pointer', textAlign: 'left', width: '100%', font: 'inherit' }}
       >
         <div style={{ fontSize: 12, color: '#6B5E54' }}>📍 Enable location to see local weather &amp; walk conditions</div>
@@ -108,7 +109,7 @@ export default function WeatherWidget() {
   const adv = advisory(state)
 
   return (
-    <div style={wrapStyle}>
+    <div className="weather-widget" style={wrapStyle}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontSize: 22 }}>{condIcon}</span>
         <div>
