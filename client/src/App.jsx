@@ -7,6 +7,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage.jsx'
 import Feed from './pages/Feed.jsx'
 import Profile from './pages/Profile.jsx'
 import Explore from './pages/Explore.jsx'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage.jsx'
+import TermsPage from './pages/TermsPage.jsx'
 import AuthDrawer from './components/AuthDrawer.jsx'
 
 export default function App() {
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="/feed" element={<Feed />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/explore" element={<Explore />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
         {/* Old dropdown-search link shape — keep it working, just hand off to /explore. */}
         <Route path="/search" element={<Navigate to={{ pathname: '/explore', search: location.search }} replace />} />
       </Routes>

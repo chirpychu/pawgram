@@ -6,6 +6,12 @@ import { useEffect, useRef, useState } from 'react'
  * entrance each time it re-enters. Respects prefers-reduced-motion by
  * skipping the observer and just staying visible.
  *
+ * Not a good fit for a short element right at the very bottom of the page
+ * (a footer, say): the bottom rootMargin below can fail to ever be
+ * satisfied at the page's natural scroll end, only transiently clearing it
+ * during iOS's elastic overscroll bounce — so it can appear to flicker in
+ * and immediately back out. Render that kind of element without this hook.
+ *
  * Usage: const [ref, visible] = useScrollReveal();
  *        <div ref={ref} className={`reveal ${visible ? 'is-visible' : ''}`}>
  */
@@ -26,7 +32,9 @@ export function useScrollReveal() {
     }
 
     const observer = new IntersectionObserver(
-      ([entry]) => setVisible(entry.isIntersecting),
+      ([entry]) => {
+        setVisible(entry.isIntersecting)
+      },
       { threshold: 0.15, rootMargin: '0px 0px -10% 0px' }
     )
     observer.observe(el)

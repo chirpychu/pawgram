@@ -26,7 +26,6 @@ const FEATURES = [
 export default function Landing() {
   const location = useLocation()
   const [featuresRef, featuresVisible] = useScrollReveal()
-  const [footerRef, footerVisible] = useScrollReveal()
 
   const authLinkProps = (to) => ({ to, state: { backgroundLocation: location } })
 
@@ -79,14 +78,19 @@ export default function Landing() {
       <FreshFromThePack />
       <PlaydatesSearch />
 
-      {/* FOOTER */}
-      <div ref={footerRef} className={`footer-row reveal ${footerVisible ? 'is-visible' : ''}`}
+      {/* FOOTER — intentionally not scroll-reveal animated: it holds the only
+          Privacy/Terms/Contact links on the page, and a short last-row element
+          like this can fail an IntersectionObserver's bottom rootMargin at the
+          page's natural scroll end (the box only clears that margin during
+          iOS's elastic overscroll bounce, then disappears again once the
+          bounce settles back) — always rendering it avoids both. */}
+      <div className="footer-row"
         style={{ borderTop: '1px solid #EAE0D2', padding: '28px 48px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, color: '#A6927C', fontSize: 14 }}>
         <div>Pawgram — made for pets and their people</div>
         <div style={{ display: 'flex', gap: 20 }}>
-          <a href="#" style={{ color: '#A6927C' }}>Privacy</a>
-          <a href="#" style={{ color: '#A6927C' }}>Terms</a>
-          <a href="#" style={{ color: '#A6927C' }}>Contact</a>
+          <Link to="/privacy" style={{ color: '#A6927C' }}>Privacy</Link>
+          <Link to="/terms" style={{ color: '#A6927C' }}>Terms</Link>
+          <a href="mailto:chirpychu@gmail.com" style={{ color: '#A6927C' }}>Contact</a>
         </div>
       </div>
     </div>

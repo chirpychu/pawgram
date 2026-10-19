@@ -41,6 +41,15 @@ input, button, textarea, select { font-family: 'Figtree', sans-serif; font-size:
 
 .card { background: #fff; border-radius: 20px; box-shadow: 0 2px 10px rgba(0, 0, 0, .04); }
 
+/* ---- Legal pages (Privacy Policy / Terms) ---- */
+.legal-body h2 { font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 19px; color: var(--ink); margin: 32px 0 10px; }
+.legal-body h2:first-child { margin-top: 0; }
+.legal-body p { margin: 0 0 14px; }
+.legal-body ul { margin: 0 0 14px; padding-left: 22px; }
+.legal-body li { margin-bottom: 8px; }
+.legal-body a { font-weight: 600; }
+.legal-body strong { color: var(--ink); }
+
 /* ---- Logged-in app shell (feed / profile / search) ---- */
 a.navitem, a.plain { color: var(--ink); text-decoration: none; }
 .navitem {
