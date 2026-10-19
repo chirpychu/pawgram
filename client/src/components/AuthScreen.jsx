@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import Brand from './Brand.jsx'
 
 /** Shared background/card chrome for the full-page Login and Signup screens. */
 export default function AuthScreen({ title, blobSide = 'login', footer, children }) {
@@ -30,7 +31,7 @@ export default function AuthScreen({ title, blobSide = 'login', footer, children
       </div>
 
       <div className="auth-card">
-        <Link to="/" className="auth-logo">🐾 Pawgram</Link>
+        <Link to="/" className="auth-logo"><Brand /></Link>
         <h1>{title}</h1>
         {children}
         <div className="auth-foot">{footer}</div>

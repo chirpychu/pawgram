@@ -48,7 +48,19 @@ export default function SettingsMenu({ me }) {
 
   function openMenu() {
     const rect = toggleRef.current.getBoundingClientRect()
+    // Prefer opening below the icon — the natural place a "box" opens
+    // from a click, and the only option that works for the horizontal
+    // mobile top bar (opening above it there would push the panel off
+    // the top of the screen). Falls back to opening above only when
+    // there's genuinely more room that way, which mainly covers the
+    // desktop sidebar's vertical layout where Settings sits at the very
+    // bottom of the column.
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    const openBelow = spaceBelow >= spaceAbove
     setPos({
+      openBelow,
+      top: rect.bottom + 6,
       bottom: window.innerHeight - rect.top + 6,
       left: Math.max(8, Math.min(rect.left, window.innerWidth - 256)),
     })
@@ -96,7 +108,14 @@ export default function SettingsMenu({ me }) {
       {open && (
         <div
           className="explore-dropdown"
-          style={{ display: 'block', bottom: pos.bottom, left: pos.left, top: 'auto', width: 240 }}
+          style={{
+            display: 'block',
+            left: pos.left,
+            width: 240,
+            maxHeight: 'calc(100vh - 32px)',
+            overflowY: 'auto',
+            ...(pos.openBelow ? { top: pos.top, bottom: 'auto' } : { bottom: pos.bottom, top: 'auto' }),
+          }}
         >
           <div style={{ padding: '6px 10px 2px', fontSize: 13, fontWeight: 600, color: '#3A2E26' }}>Account privacy</div>
           <div style={{ padding: '2px 10px 12px', fontSize: 13, color: '#6B5E54' }}>

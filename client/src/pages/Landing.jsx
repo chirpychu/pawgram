@@ -3,6 +3,7 @@ import HeroCarousel from '../components/HeroCarousel.jsx'
 import FreshFromThePack from '../components/FreshFromThePack.jsx'
 import PlaydatesSearch from '../components/PlaydatesSearch.jsx'
 import { useScrollReveal } from '../hooks/useScrollReveal.js'
+import Brand from '../components/Brand.jsx'
 
 const FEATURES = [
   {
@@ -34,7 +35,7 @@ export default function Landing() {
 
       {/* NAV */}
       <div className="nav-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '28px 48px', flexWrap: 'wrap', gap: 16 }}>
-        <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 30, color: '#3A2E26' }}>🐾 Pawgram</div>
+        <Brand />
         <div className="nav-row-links" style={{ display: 'flex', alignItems: 'center', gap: 28, flexWrap: 'wrap' }}>
           <a href="#playdates-section" style={{ fontWeight: 500 }}>Playdates</a>
           <a href="#about-section" style={{ fontWeight: 500 }}>About</a>

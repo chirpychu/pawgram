@@ -78,6 +78,7 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
     flex: none !important;
     flex-direction: row !important;
     align-items: center !important;
+    justify-content: space-between !important;
     gap: 4px !important;
     padding: 10px 12px !important;
     border-right: none !important;
@@ -90,6 +91,17 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
     background: var(--cream) !important;
   }
   .left-sidebar .logo { padding: 8px 10px 8px 4px !important; flex: none !important; }
+  /* On the vertical desktop sidebar .nav-icons is `display: contents` (an
+     invisible wrapper so its children act as direct flex items). On the
+     horizontal mobile strip it becomes a real flex item of its own, with
+     `justify-content: space-between` on .left-sidebar pushing it — and
+     everything inside it — flush to the right edge, away from the logo. */
+  .left-sidebar .nav-icons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    flex: none !important;
+  }
   .left-sidebar .navitem { padding: 8px 10px !important; flex: none !important; width: auto !important; }
   .left-sidebar .explore-wrap,
   .left-sidebar .sidebar-new-post,
@@ -106,6 +118,16 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
   .left-sidebar .navitem .nav-label { display: none; }
   .left-sidebar .sidebar-new-post,
   .left-sidebar .settings-menu .navitem { padding: 8px 12px !important; font-size: 12px !important; }
+}
+@media (max-width: 400px) {
+  /* Standardized brand mark scales down a bit on the narrowest phones so
+     the logo + the right-aligned icon strip both fit without the top bar
+     needing to scroll — still the exact same icon, just smaller, on
+     every page at this width (not a per-page tweak). */
+  .brand-mark { font-size: 18px !important; gap: 6px !important; }
+  .left-sidebar { padding: 10px 8px !important; }
+  .left-sidebar .logo { padding: 8px 4px 8px 0 !important; }
+  .left-sidebar .nav-icons { gap: 2px !important; }
 }
 
 /* ---- Notification bell ---- */
@@ -159,9 +181,6 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
 }
 .auth-logo {
   display: block;
-  font-family: 'Fredoka', sans-serif;
-  font-weight: 700;
-  font-size: 26px;
   text-align: center;
   margin-bottom: 8px;
   color: var(--ink);

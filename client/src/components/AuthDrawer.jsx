@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { LoginForm, SignupForm } from './AuthForms.jsx'
+import Brand from './Brand.jsx'
 
 /**
  * The slide-in-from-the-right login/signup drawer shown over the landing
@@ -60,7 +61,7 @@ export default function AuthDrawer({ initialTab }) {
         </button>
 
         <div className="auth-drawer-body" style={{ padding: '44px 32px 32px' }}>
-          <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 700, fontSize: 22, marginBottom: 24 }}>🐾 Pawgram</div>
+          <div style={{ marginBottom: 24 }}><Brand /></div>
 
           <div className="auth-drawer-tabs">
             <button type="button" className={tab === 'login' ? 'active' : ''} onClick={() => setTab('login')}>Log in</button>
