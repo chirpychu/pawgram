@@ -14,7 +14,7 @@ export const PET_TIPS = [
   {
     icon: '🦷',
     title: "Don't skip dental care",
-    body: 'Most dogs and cats already show signs of dental disease by age three. Regular brushing and vet dental checks catch problems before they cause pain or infection.',
+    body: 'By age three, most dogs and cats already have some degree of dental disease — often without any obvious signs an owner would notice. Regular brushing and vet dental checks catch problems before they cause pain or infection.',
     source: 'AAHA',
   },
   {
@@ -44,8 +44,8 @@ export const PET_TIPS = [
   {
     icon: '🍫',
     title: 'Everyday foods that are dangerous for pets',
-    body: 'Chocolate, xylitol (a sweetener in sugar-free gum and candy), onions and garlic, grapes and raisins, macadamia nuts, avocado, and fatty or fried foods can all be toxic — keep them well out of reach.',
-    source: 'AVMA',
+    body: 'Chocolate, xylitol (a sweetener in sugar-free gum and candy), onions and garlic, grapes and raisins, and macadamia nuts can all be toxic, and fatty or fried foods (plus avocado pits) can cause serious stomach upset or blockages — keep them well out of reach.',
+    source: 'ASPCA',
   },
   {
     icon: '🚗',
