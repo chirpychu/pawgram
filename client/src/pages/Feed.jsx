@@ -323,11 +323,6 @@ export default function Feed() {
         </Link>
 
         <div className="card" style={{ padding: 20 }}>
-          <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 600, fontSize: 16, marginBottom: 14 }}>Upcoming playdates</div>
-          <div style={{ fontSize: 13, color: '#A6927C' }}>No playdates yet — this is coming soon.</div>
-        </div>
-
-        <div className="card" style={{ padding: 20 }}>
           <div style={{ fontFamily: "'Fredoka',sans-serif", fontWeight: 600, fontSize: 16, marginBottom: 14 }}>Suggested for you</div>
           <Suggestions key={suggestionsKey} me={me} onFollowed={() => { loadFeed(); setSuggestionsKey((k) => k + 1) }} />
         </div>

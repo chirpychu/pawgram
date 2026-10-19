@@ -71,12 +71,21 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
   z-index: 1000;
 }
 
+/* The weather widget sits after .nav-icons in the markup (so the icons
+   stay one contiguous group for the mobile right-alignment below), but
+   on the vertical desktop sidebar it should still visually land between
+   the nav links and Settings, same as before — flex `order` restores
+   that without needing it physically between them in the DOM. */
+.left-sidebar .weather-widget { order: 5; }
+.left-sidebar .settings-menu { order: 6; }
+
 @media (max-width: 860px) {
   .app-shell { flex-direction: column !important; }
   .left-sidebar {
     width: 100% !important;
     flex: none !important;
     flex-direction: row !important;
+    flex-wrap: wrap !important;
     align-items: center !important;
     justify-content: space-between !important;
     gap: 4px !important;
@@ -106,7 +115,16 @@ a.navitem, a.plain { color: var(--ink); text-decoration: none; }
   .left-sidebar .explore-wrap,
   .left-sidebar .sidebar-new-post,
   .left-sidebar .settings-menu { margin-top: 0 !important; flex: none !important; }
-  .left-sidebar .weather-widget { display: none !important; }
+  /* Doesn't fit as an "icon" alongside Home/Explore/Profile/Settings, so
+     instead of hiding it, it wraps onto its own full-width row below the
+     icon strip (flex-wrap on .left-sidebar + flex-basis 100% here). */
+  .left-sidebar .weather-widget {
+    order: 10 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    margin: 6px 0 0 !important;
+    white-space: normal !important;
+  }
   .center-col, .main-col { padding: 16px !important; }
   .right-sidebar { width: 100% !important; flex: none !important; padding: 0 16px 16px !important; }
   .my-profile-card { display: none !important; }

@@ -10,11 +10,19 @@ import WeatherWidget from './WeatherWidget.jsx'
  * account-privacy toggle; `extra` renders any page-specific extra items.
  *
  * On narrow screens this collapses (via CSS) into a horizontal strip at
- * the top of the page: the logo stays pinned left, and everything else
- * — Home/Explore/Profile/extra/Settings, grouped under `.nav-icons` — is
+ * the top of the page: the logo stays pinned left, and the icons —
+ * Home/Explore/Profile/extra/Settings, grouped under `.nav-icons` — are
  * pushed to the right edge via the `.left-sidebar` flex container's
  * space-between (see global.css), rather than trailing the logo with a
  * big gap of empty space.
+ *
+ * The weather widget is a content card, not an icon, so it's kept as its
+ * own flex item outside `.nav-icons` rather than squeezed in between the
+ * icons: on the vertical desktop sidebar it still sits between the nav
+ * links and Settings (via CSS `order`, since it's after `.nav-icons` in
+ * the markup so the icons can stay a single contiguous group for the
+ * mobile right-alignment); on the horizontal mobile strip it wraps onto
+ * its own full-width row below the icons instead of being hidden.
  */
 export default function AppSidebar({ active, me, extra }) {
   return (
@@ -41,10 +49,10 @@ export default function AppSidebar({ active, me, extra }) {
 
         {extra}
 
-        <WeatherWidget />
-
         <SettingsMenu me={me} />
       </div>
+
+      <WeatherWidget />
     </div>
   )
 }
