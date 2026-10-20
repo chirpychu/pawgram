@@ -1,7 +1,31 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
 import PasswordInput from './PasswordInput.jsx'
+
+// Supabase's own password-policy error is a technical wall of text (it
+// spells out every allowed character class). On a small screen, especially
+// with the keyboard still up, that's easy to misread as "nothing happened"
+// rather than "fix your password" — so swap it for something a person can
+// actually act on instead of surfacing it verbatim.
+function friendlyAuthError(message) {
+  if (!message) return 'Something went wrong. Please try again.'
+  if (/password/i.test(message)) {
+    return "That password doesn't meet the requirements — use at least 12 characters."
+  }
+  return message
+}
+
+/** Scrolls a just-set message into view — on a phone with the keyboard up,
+ *  a message appended below the submit button can land off-screen and look
+ *  like the form silently did nothing. */
+function useScrollMsgIntoView(msg) {
+  const ref = useRef(null)
+  useEffect(() => {
+    if (msg.text) ref.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }, [msg])
+  return ref
+}
 
 // Races a Supabase call against a timeout so a stalled request (flaky
 // connection, a backgrounded mobile tab resuming into a bad state) can't
@@ -21,6 +45,7 @@ export function LoginForm({ onSuccess }) {
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState({ text: '', type: '' })
   const [busy, setBusy] = useState(false)
+  const msgRef = useScrollMsgIntoView(msg)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -89,7 +114,7 @@ export function LoginForm({ onSuccess }) {
         onChange={(e) => setPassword(e.target.value)}
       />
       <button type="submit" className="btn submit-btn" disabled={busy}>Log in</button>
-      {msg.text && <div className={`msg ${msg.type}`}>{msg.text}</div>}
+      {msg.text && <div ref={msgRef} className={`msg ${msg.type}`}>{msg.text}</div>}
     </form>
   )
 }
@@ -103,6 +128,7 @@ export function SignupForm({ onSuccess }) {
   const [password, setPassword] = useState('')
   const [msg, setMsg] = useState({ text: '', type: '' })
   const [busy, setBusy] = useState(false)
+  const msgRef = useScrollMsgIntoView(msg)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -137,7 +163,7 @@ export function SignupForm({ onSuccess }) {
       )
 
       if (error) {
-        setMsg({ text: error.message, type: 'error' })
+        setMsg({ text: friendlyAuthError(error.message), type: 'error' })
         setBusy(false)
         return
       }
@@ -213,13 +239,16 @@ export function SignupForm({ onSuccess }) {
       <PasswordInput
         id="signup-password"
         autoComplete="new-password"
-        minLength={6}
+        minLength={12}
         required
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+      <div style={{ fontSize: 12, color: 'var(--ink-faint)', margin: '-12px 0 18px' }}>
+        At least 12 characters.
+      </div>
       <button type="submit" className="btn submit-btn" disabled={busy}>Sign up</button>
-      {msg.text && <div className={`msg ${msg.type}`}>{msg.text}</div>}
+      {msg.text && <div ref={msgRef} className={`msg ${msg.type}`}>{msg.text}</div>}
     </form>
   )
 }
