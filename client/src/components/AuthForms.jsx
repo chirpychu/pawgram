@@ -3,6 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../services/supabaseClient'
 import PasswordInput from './PasswordInput.jsx'
 
+// Races a Supabase call against a timeout so a stalled request (flaky
+// connection, a backgrounded mobile tab resuming into a bad state) can't
+// leave a form stuck on its "working…" message forever with the submit
+// button disabled and no way to recover short of reloading the page.
+function withTimeout(promise, ms = 15000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), ms)),
+  ])
+}
+
 /** Login form. Calls onSuccess() right before navigating to /feed. */
 export function LoginForm({ onSuccess }) {
   const navigate = useNavigate()
@@ -16,32 +27,46 @@ export function LoginForm({ onSuccess }) {
     setBusy(true)
     setMsg({ text: 'Logging in…', type: '' })
 
-    // Supabase Auth itself only knows email+password; this app logs in by
-    // username, so resolve it to the account's real email via the locked-
-    // down RPC first (see the username_to_email_lookup migration).
-    const { data: email, error: lookupError } = await supabase.rpc('username_to_email', {
-      p_username: username.trim(),
-    })
+    try {
+      // Supabase Auth itself only knows email+password; this app logs in by
+      // username, so resolve it to the account's real email via the locked-
+      // down RPC first (see the username_to_email_lookup migration).
+      // Wrapped in a timeout — without one, a stalled request (flaky mobile
+      // connection, a backgrounded tab that comes back confused) leaves the
+      // form stuck on "Logging in…" forever with no way to recover short of
+      // reloading the page.
+      const { data: email, error: lookupError } = await withTimeout(
+        supabase.rpc('username_to_email', { p_username: username.trim() })
+      )
 
-    if (lookupError || !email) {
-      setMsg({ text: 'Incorrect username or password.', type: 'error' })
+      if (lookupError || !email) {
+        setMsg({ text: 'Incorrect username or password.', type: 'error' })
+        setBusy(false)
+        return
+      }
+
+      const { error } = await withTimeout(supabase.auth.signInWithPassword({ email, password }))
+
+      if (error) {
+        setMsg({ text: 'Incorrect username or password.', type: 'error' })
+        setBusy(false)
+        return
+      }
+
+      setMsg({ text: 'Welcome back! Redirecting…', type: 'success' })
+      setTimeout(() => {
+        onSuccess?.()
+        navigate('/feed')
+      }, 800)
+    } catch (err) {
+      setMsg({
+        text: err?.message === 'timeout'
+          ? "That's taking too long — check your connection and try again."
+          : 'Something went wrong logging in. Please try again.',
+        type: 'error',
+      })
       setBusy(false)
-      return
     }
-
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (error) {
-      setMsg({ text: 'Incorrect username or password.', type: 'error' })
-      setBusy(false)
-      return
-    }
-
-    setMsg({ text: 'Welcome back! Redirecting…', type: 'success' })
-    setTimeout(() => {
-      onSuccess?.()
-      navigate('/feed')
-    }, 800)
   }
 
   return (
@@ -84,43 +109,53 @@ export function SignupForm({ onSuccess }) {
     setBusy(true)
     setMsg({ text: 'Creating your account…', type: '' })
 
-    const { data: existing, error: lookupError } = await supabase
-      .from('profiles')
-      .select('username')
-      .eq('username', username.trim())
-      .maybeSingle()
+    try {
+      const { data: existing, error: lookupError } = await withTimeout(
+        supabase.from('profiles').select('username').eq('username', username.trim()).maybeSingle()
+      )
 
-    if (lookupError) {
-      setMsg({ text: 'Something went wrong checking that username. Try again.', type: 'error' })
+      if (lookupError) {
+        setMsg({ text: 'Something went wrong checking that username. Try again.', type: 'error' })
+        setBusy(false)
+        return
+      }
+      if (existing) {
+        setMsg({ text: 'That username is already taken.', type: 'error' })
+        setBusy(false)
+        return
+      }
+
+      // The real email is what makes "forgot username/password" possible
+      // later — Supabase's own reset-password email goes straight to it,
+      // and the username -> email RPC used at login resolves to it too.
+      const { error } = await withTimeout(
+        supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { username: username.trim(), display_name: displayName.trim() } },
+        })
+      )
+
+      if (error) {
+        setMsg({ text: error.message, type: 'error' })
+        setBusy(false)
+        return
+      }
+
+      setMsg({ text: 'Account created! Redirecting…', type: 'success' })
+      setTimeout(() => {
+        onSuccess?.()
+        navigate('/feed')
+      }, 1200)
+    } catch (err) {
+      setMsg({
+        text: err?.message === 'timeout'
+          ? "That's taking too long — check your connection and try again."
+          : 'Something went wrong signing up. Please try again.',
+        type: 'error',
+      })
       setBusy(false)
-      return
     }
-    if (existing) {
-      setMsg({ text: 'That username is already taken.', type: 'error' })
-      setBusy(false)
-      return
-    }
-
-    // The real email is what makes "forgot username/password" possible
-    // later — Supabase's own reset-password email goes straight to it,
-    // and the username -> email RPC used at login resolves to it too.
-    const { error } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-      options: { data: { username: username.trim(), display_name: displayName.trim() } },
-    })
-
-    if (error) {
-      setMsg({ text: error.message, type: 'error' })
-      setBusy(false)
-      return
-    }
-
-    setMsg({ text: 'Account created! Redirecting…', type: 'success' })
-    setTimeout(() => {
-      onSuccess?.()
-      navigate('/feed')
-    }, 1200)
   }
 
   return (
