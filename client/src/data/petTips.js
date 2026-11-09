@@ -44,8 +44,8 @@ export const PET_TIPS = [
   {
     icon: '🍫',
     title: 'Everyday foods that are dangerous for pets',
-    body: 'Chocolate, xylitol (a sweetener in sugar-free gum and candy), onions and garlic, grapes and raisins, and macadamia nuts can all be toxic, and fatty or fried foods (plus avocado pits) can cause serious stomach upset or blockages — keep them well out of reach.',
-    source: 'ASPCA',
+    body: 'Chocolate, xylitol (a sweetener in sugar-free gum and candy), onions and garlic, grapes and raisins, and macadamia nuts can all be toxic, and fatty or fried foods can trigger vomiting, diarrhea, or pancreatitis. The avocado pit is also a serious swallowing hazard that can cause a dangerous intestinal blockage — keep them well out of reach.',
+    source: 'ASPCA / Pet Poison Helpline',
   },
   {
     icon: '🚗',
